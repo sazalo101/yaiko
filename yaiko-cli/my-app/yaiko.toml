@@ -1,0 +1,19 @@
+# Yaiko Configuration
+[server]
+host = "127.0.0.1"
+port = 3000
+
+[database]
+type = "postgres"
+
+[security]
+cors_origins = ["http://localhost:3000"]
+rate_limit_requests = 100
+csrf_enabled = true
+
+[seo]
+robots_txt_enabled = true
+sitemap_enabled = true
+
+[logging]
+level = "info"

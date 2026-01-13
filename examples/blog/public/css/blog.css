@@ -1,0 +1,157 @@
+/* Yaiko Blog Styles */
+
+:root {
+    --color-bg: #0f172a;
+    --color-surface: #1e293b;
+    --color-text: #f1f5f9;
+    --color-text-muted: #94a3b8;
+    --color-primary: #6366f1;
+    --color-primary-light: #818cf8;
+    --font-sans: "Inter", -apple-system, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-sans);
+    background: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.blog {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--color-surface);
+}
+
+.logo {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.tagline {
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+}
+
+.back {
+    display: inline-block;
+    color: var(--color-primary-light);
+    text-decoration: none;
+    margin-bottom: 2rem;
+}
+
+.back:hover {
+    color: var(--color-primary);
+}
+
+.posts {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.post-card {
+    background: var(--color-surface);
+    border-radius: 1rem;
+    padding: 2rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.post-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.post-card h2 {
+    margin-bottom: 0.5rem;
+}
+
+.post-card h2 a {
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.post-card h2 a:hover {
+    color: var(--color-primary-light);
+}
+
+.post-card time {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.post-card p {
+    color: var(--color-text-muted);
+}
+
+.post {
+    background: var(--color-surface);
+    border-radius: 1rem;
+    padding: 3rem;
+}
+
+.post h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.post time {
+    color: var(--color-text-muted);
+    display: block;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--color-bg);
+}
+
+.post .content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-surface);
+    color: var(--color-text-muted);
+}
+
+.footer a {
+    color: var(--color-primary-light);
+    text-decoration: none;
+}
+
+.footer a:hover {
+    color: var(--color-primary);
+}
+
+@media (max-width: 600px) {
+    .blog {
+        padding: 1rem;
+    }
+
+    .post-card,
+    .post {
+        padding: 1.5rem;
+    }
+
+    .post h1 {
+        font-size: 1.8rem;
+    }
+}

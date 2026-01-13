@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A simple note-taking app built with Yaiko">
+    <title>Yaiko Notes</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app">
+        <header class="header">
+            <h1>Yaiko Notes</h1>
+            <button class="btn btn-primary" id="new-note-btn">+ New Note</button>
+        </header>
+
+        <main class="main">
+            <aside class="sidebar">
+                <div class="search-box">
+                    <input type="text" id="search" placeholder="Search notes...">
+                </div>
+                <ul class="note-list" id="note-list">
+                    <!-- Notes will be loaded here -->
+                </ul>
+            </aside>
+
+            <section class="editor">
+                <div class="editor-empty" id="editor-empty">
+                    <p>Select a note or create a new one</p>
+                </div>
+
+                <div class="editor-content" id="editor-content" style="display: none;">
+                    <input type="hidden" id="note-id">
+                    <input type="text" class="note-title" id="note-title" placeholder="Note title">
+                    <textarea class="note-content" id="note-content" placeholder="Write your note here..."></textarea>
+                    <div class="editor-actions">
+                        <button class="btn btn-secondary" id="delete-btn">Delete</button>
+                        <button class="btn btn-primary" id="save-btn">Save</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>
