@@ -29,9 +29,13 @@ impl fmt::Debug for Route {
 }
 impl Route {
     pub fn new(method: Method, path: &str, handler: Arc<dyn Handler>) -> Self {
-        let (regex, param_names) = Self::path_to_regex(path);
+        let mut normalized_path = path.trim_end_matches('/');
+        if normalized_path.is_empty() {
+            normalized_path = "/";
+        }
+        let (regex, param_names) = Self::path_to_regex(normalized_path);
         Route {
-            path: path.to_string(),
+            path: normalized_path.to_string(),
             method,
             regex,
             param_names,
@@ -75,10 +79,7 @@ impl Route {
         (Regex::new(&regex_str).unwrap(), param_names)
     }
 
-    pub fn matches(&self, method: &Method, path: &str) -> Option<HashMap<String, String>> {
-        if self.method != *method {
-            return None;
-        }
+    pub fn matches_path(&self, path: &str) -> Option<HashMap<String, String>> {
 
         if let Some(captures) = self.regex.captures(path) {
             let mut params = HashMap::new();
@@ -94,11 +95,12 @@ impl Route {
     }
 }
 
+#[derive(Clone)]
 pub struct Router {
     routes: Vec<Route>,
     middleware: Vec<Arc<dyn Middleware>>,
-    static_handler: Option<Arc<StaticFiles>>,
-    static_prefix: Option<String>,
+    pub static_handler: Option<Arc<StaticFiles>>,
+    pub static_prefix: Option<String>,
 }
 
 impl Router {
@@ -143,6 +145,30 @@ impl Router {
         self
     }
 
+    pub fn patch<H>(mut self, path: &str, handler: H) -> Self
+    where
+        H: Handler + 'static,
+    {
+        self.routes.push(Route::new(Method::PATCH, path, Arc::new(handler)));
+        self
+    }
+
+    pub fn options<H>(mut self, path: &str, handler: H) -> Self
+    where
+        H: Handler + 'static,
+    {
+        self.routes.push(Route::new(Method::OPTIONS, path, Arc::new(handler)));
+        self
+    }
+
+    pub fn head<H>(mut self, path: &str, handler: H) -> Self
+    where
+        H: Handler + 'static,
+    {
+        self.routes.push(Route::new(Method::HEAD, path, Arc::new(handler)));
+        self
+    }
+
     /// Mount static files from a directory at a URL prefix
     /// 
     /// # Example
@@ -164,11 +190,68 @@ impl Router {
         self
     }
 
+    /// Mount a sub-router at a given path prefix
+    pub fn mount(mut self, path: &str, router: Router) -> Self {
+        // We create a route that matches the prefix and anything after it
+        let mut prefix = path.trim_end_matches('/').to_string();
+        if prefix.is_empty() {
+            prefix = "/".to_string();
+        }
+        
+        let path_pattern = format!("{}/*", prefix);
+        // We mount it for all common methods
+        for method in [Method::GET, Method::POST, Method::PUT, Method::DELETE, Method::PATCH, Method::OPTIONS] {
+            self.routes.push(Route::new(method, &path_pattern, Arc::new(router.clone())));
+        }
+        self
+    }
+
     pub async fn handle_request(&self, mut req: Request) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
+        let mut original_path = req.uri.path().trim_end_matches('/').to_string();
+        if original_path.is_empty() {
+            original_path = "/".to_string();
+        }
+        let target_method = req.method.clone();
+        
+        // Track allowed methods for 405 Method Not Allowed / OPTIONS fallbacks
+        let mut allowed_methods = Vec::new();
+        let mut found_match = false;
+        
         // Find matching route
         for route in &self.routes {
-            if let Some(params) = route.matches(&req.method, req.uri.path()) {
-                req.params = params;
+            if let Some(params) = route.matches_path(&original_path) {
+                found_match = true;
+                allowed_methods.push(route.method.as_str().to_string());
+                
+                // Allow exact method match OR auto-resolve HEAD requests to GET routes
+                if route.method == target_method || (target_method == Method::HEAD && route.method == Method::GET) {
+                    req.params = params;
+                
+                // If it's a mount route (ends with /*), we need to strip the prefix for the sub-router
+                if route.path.ends_with("/*") {
+                    let prefix = route.path.trim_end_matches("/*");
+                    let mut new_path = original_path.strip_prefix(prefix).unwrap_or(&original_path).to_string();
+                    if new_path.is_empty() {
+                        new_path = "/".to_string();
+                    }
+                    
+                    // Replace the URI path but keep query params
+                    let mut parts = req.uri.clone().into_parts();
+                    let path_and_query = match parts.path_and_query {
+                        Some(pq) => {
+                            if let Some(query) = pq.query() {
+                                hyper::http::uri::PathAndQuery::try_from(format!("{}?{}", new_path, query).as_str()).ok()
+                            } else {
+                                hyper::http::uri::PathAndQuery::try_from(new_path.as_str()).ok()
+                            }
+                        }
+                        None => hyper::http::uri::PathAndQuery::try_from(new_path.as_str()).ok(),
+                    };
+                    parts.path_and_query = path_and_query;
+                    if let Ok(new_uri) = hyper::Uri::from_parts(parts) {
+                        req.uri = new_uri;
+                    }
+                }
                 
                 // Apply middleware chain
                 let handler = route.handler.clone();
@@ -178,7 +261,29 @@ impl Router {
                 });
                 
                 return final_handler.handle(req).await;
+                }
             }
+        }
+
+        // Return a global OPTIONS preflight success safely if ANY route path matched returning the Allow/CORS options
+        if found_match && target_method == Method::OPTIONS {
+            allowed_methods.sort();
+            allowed_methods.dedup();
+            let allow_header = allowed_methods.join(", ");
+            return Ok(Response::new()
+                .status(hyper::StatusCode::OK)
+                .header("Allow", &allow_header)
+                .header("Access-Control-Allow-Methods", &allow_header));
+        }
+
+        // Return a 405 Method Not Allowed error returning the Allow list safely preventing false 404 logic
+        if found_match {
+            allowed_methods.sort();
+            allowed_methods.dedup();
+            return Ok(Response::new()
+                .status(hyper::StatusCode::METHOD_NOT_ALLOWED)
+                .header("Allow", &allowed_methods.join(", "))
+                .text("Method Not Allowed"));
         }
 
         // Try static files if configured
@@ -206,5 +311,12 @@ struct MiddlewareHandler {
 impl Handler for MiddlewareHandler {
     async fn handle(&self, req: Request) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
         self.middleware.handle(req, self.next.clone()).await
+    }
+}
+
+#[async_trait]
+impl Handler for Router {
+    async fn handle(&self, req: Request) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
+        self.handle_request(req).await
     }
 }

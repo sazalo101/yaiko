@@ -30,20 +30,23 @@ impl Response {
 
     pub fn json<T: Serialize>(mut self, data: &T) -> Result<Self, serde_json::Error> {
         let json_str = serde_json::to_string(data)?;
-        self.body = Body::from(json_str);
+        self.headers.insert("Content-Length".to_string(), json_str.len().to_string());
         self.headers.insert("Content-Type".to_string(), "application/json".to_string());
+        self.body = Body::from(json_str);
         Ok(self)
     }
 
     pub fn text(mut self, text: &str) -> Self {
-        self.body = Body::from(text.to_string());
+        self.headers.insert("Content-Length".to_string(), text.len().to_string());
         self.headers.insert("Content-Type".to_string(), "text/plain".to_string());
+        self.body = Body::from(text.to_string());
         self
     }
 
     pub fn html(mut self, html: &str) -> Self {
-        self.body = Body::from(html.to_string());
+        self.headers.insert("Content-Length".to_string(), html.len().to_string());
         self.headers.insert("Content-Type".to_string(), "text/html".to_string());
+        self.body = Body::from(html.to_string());
         self
     }
 

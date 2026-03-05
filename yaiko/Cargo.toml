@@ -63,6 +63,9 @@ multer = "2.0"
 # WebSocket support
 sha1_smol = "1.0"
 base64 = "0.21"
+notify = "6.0"
+walkdir = "2.5.0"
+futures = "0.3.32"
 
 [dev-dependencies]
 tokio-test = "0.4"

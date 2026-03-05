@@ -156,9 +156,10 @@ impl Middleware for SessionMiddleware {
         let mut response = next.handle(req).await?;
 
         // Set session cookie
+        let is_secure = std::env::var("APP_ENV").unwrap_or_default() == "production";
         let cookie = Cookie::build(self.cookie_name.clone(), session.id.clone())
             .http_only(true)
-            .secure(false) // Set to true in production with HTTPS
+            .secure(is_secure) // Set to true in production with HTTPS
             .same_site(cookie::SameSite::Lax)
             .path("/")
             .finish();

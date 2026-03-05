@@ -1,108 +1,135 @@
-use crate::{Request, Response, Middleware, Handler};
-use async_trait::async_trait;
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+//! Input validation system for Yaiko applications.
+//!
+//! Provides a declarative way to validate user input and structured data.
+
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
+use std::collections::HashMap;
+use std::fmt;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Claims {
-    pub sub: String,
-    pub exp: usize,
-    pub iat: usize,
-    pub roles: Vec<String>,
+/// An error that occurred during validation
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ValidationError {
+    pub field: String,
+    pub message: String,
 }
 
-#[allow(dead_code)]
-pub struct JwtAuth {
-    secret: String,
-    algorithm: jsonwebtoken::Algorithm,
+impl fmt::Display for ValidationError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}: {}", self.field, self.message)
+    }
 }
 
-impl JwtAuth {
-    pub fn new(secret: &str) -> Self {
-        JwtAuth {
-            secret: secret.to_string(),
-            algorithm: jsonwebtoken::Algorithm::HS256,
+/// The result of a validation operation
+pub type ValidationResult = Result<(), Vec<ValidationError>>;
+
+/// A rule for validating a value
+pub trait Rule: Send + Sync {
+    fn validate(&self, field: &str, value: &str) -> Option<ValidationError>;
+}
+
+/// Minimum length rule
+pub struct MinLength(pub usize);
+
+impl Rule for MinLength {
+    fn validate(&self, field: &str, value: &str) -> Option<ValidationError> {
+        if value.chars().count() < self.0 {
+            Some(ValidationError {
+                field: field.to_string(),
+                message: format!("Must be at least {} characters long", self.0),
+            })
+        } else {
+            None
+        }
+    }
+}
+
+/// Maximum length rule
+pub struct MaxLength(pub usize);
+
+impl Rule for MaxLength {
+    fn validate(&self, field: &str, value: &str) -> Option<ValidationError> {
+        if value.chars().count() > self.0 {
+            Some(ValidationError {
+                field: field.to_string(),
+                message: format!("Must be no more than {} characters long", self.0),
+            })
+        } else {
+            None
+        }
+    }
+}
+
+/// Email format rule
+pub struct Email;
+
+impl Rule for Email {
+    fn validate(&self, field: &str, value: &str) -> Option<ValidationError> {
+        if !value.contains('@') || !value.contains('.') {
+            Some(ValidationError {
+                field: field.to_string(),
+                message: "Must be a valid email address".to_string(),
+            })
+        } else {
+            None
+        }
+    }
+}
+
+/// Required field rule
+pub struct Required;
+
+impl Rule for Required {
+    fn validate(&self, field: &str, value: &str) -> Option<ValidationError> {
+        if value.trim().is_empty() {
+            Some(ValidationError {
+                field: field.to_string(),
+                message: "Field is required".to_string(),
+            })
+        } else {
+            None
+        }
+    }
+}
+
+/// A collection of rules to validate a single field
+pub struct Validator {
+    rules: HashMap<String, Vec<Box<dyn Rule>>>,
+}
+
+impl Validator {
+    pub fn new() -> Self {
+        Self {
+            rules: HashMap::new(),
         }
     }
 
-    pub fn generate_token(&self, user_id: &str, roles: Vec<String>) -> Result<String, jsonwebtoken::errors::Error> {
-        let now = chrono::Utc::now();
-        let exp = now + chrono::Duration::hours(24);
-        
-        let claims = Claims {
-            sub: user_id.to_string(),
-            exp: exp.timestamp() as usize,
-            iat: now.timestamp() as usize,
-            roles,
-        };
-
-        encode(&Header::default(), &claims, &EncodingKey::from_secret(self.secret.as_ref()))
-    }
-
-    pub fn verify_token(&self, token: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
-        decode::<Claims>(
-            token,
-            &DecodingKey::from_secret(self.secret.as_ref()),
-            &Validation::default(),
-        ).map(|data| data.claims)
-    }
-}
-
-pub struct AuthMiddleware {
-    jwt: Arc<JwtAuth>,
-    skip_paths: Vec<String>,
-}
-
-impl AuthMiddleware {
-    pub fn new(jwt: Arc<JwtAuth>) -> Self {
-        AuthMiddleware {
-            jwt,
-            skip_paths: vec!["/login".to_string(), "/register".to_string()],
-        }
-    }
-
-    pub fn skip_path(mut self, path: &str) -> Self {
-        self.skip_paths.push(path.to_string());
+    /// Add a rule for a specific field
+    pub fn add_rule<R: Rule + 'static>(mut self, field: &str, rule: R) -> Self {
+        self.rules
+            .entry(field.to_string())
+            .or_insert_with(Vec::new)
+            .push(Box::new(rule));
         self
     }
-}
 
-#[async_trait]
-impl Middleware for AuthMiddleware {
-    async fn handle(
-        &self,
-        mut req: Request,
-        next: Arc<dyn Handler>,
-    ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
-        // Skip authentication for certain paths
-        if self.skip_paths.contains(&req.uri.path().to_string()) {
-            return next.handle(req).await;
-        }
+    /// Validate a map of field values
+    pub fn validate(&self, data: &HashMap<String, String>) -> ValidationResult {
+        let mut errors = Vec::new();
 
-        // Extract JWT token from Authorization header
-        let token = req.headers
-            .get("authorization")
-            .and_then(|auth| auth.to_str().ok())
-            .and_then(|auth| auth.strip_prefix("Bearer "));
-
-        if let Some(token) = token {
-            match self.jwt.verify_token(token) {
-                Ok(claims) => {
-                    req.user_id = Some(claims.sub);
-                    req.user_roles = claims.roles;
-                    next.handle(req).await
-                }
-                Err(_) => {
-                    Ok(Response::new()
-                        .status(hyper::StatusCode::UNAUTHORIZED)
-                        .json(&serde_json::json!({"error": "Invalid token"}))?)
+        for (field, rules) in &self.rules {
+            let value = data.get(field).map(|s| s.as_str()).unwrap_or("");
+            for rule in rules {
+                if let Some(err) = rule.validate(field, value) {
+                    errors.push(err);
+                    // Usually we want to gather all errors, but sometimes breaking early on first error per field is preferred.
                 }
             }
+        }
+
+        if errors.is_empty() {
+            Ok(())
         } else {
-            Ok(Response::new()
-                .status(hyper::StatusCode::UNAUTHORIZED)
-                .json(&serde_json::json!({"error": "Missing token"}))?)
+            Err(errors)
         }
     }
 }

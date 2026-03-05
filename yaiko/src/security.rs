@@ -48,10 +48,26 @@ pub struct RateLimiter {
 
 impl RateLimiter {
     pub fn new(requests_per_window: u32, window_secs: u64) -> Self {
+        let window_duration = Duration::from_secs(window_secs);
+        let buckets = Arc::new(Mutex::new(HashMap::new()));
+        
+        // Background cleanup task
+        let cleanup_buckets = buckets.clone();
+        tokio::spawn(async move {
+            let mut interval = tokio::time::interval(Duration::from_secs(300));
+            loop {
+                interval.tick().await;
+                if let Ok(mut map) = cleanup_buckets.lock() {
+                    let now = Instant::now();
+                    map.retain(|_, &mut (_, timestamp)| now.duration_since(timestamp) <= window_duration);
+                }
+            }
+        });
+
         Self {
             requests_per_window,
-            window_duration: Duration::from_secs(window_secs),
-            buckets: Arc::new(Mutex::new(HashMap::new())),
+            window_duration,
+            buckets,
         }
     }
 
@@ -125,12 +141,7 @@ impl CsrfProtection {
     }
 
     fn generate_token() -> String {
-        use std::time::{SystemTime, UNIX_EPOCH};
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        format!("{:x}", now)
+        uuid::Uuid::new_v4().to_string()
     }
 }
 

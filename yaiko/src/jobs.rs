@@ -9,7 +9,7 @@ use std::sync::Arc;
 use tokio::sync::{Mutex, Notify};
 
 /// A boxed async function that can be stored in the queue
-pub type JobFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = Result<(), String>> + Send>> + Send>;
+pub type JobFn = Box<dyn Fn() -> Pin<Box<dyn Future<Output = Result<(), String>> + Send>> + Send + Sync>;
 
 /// Background job processor
 pub struct JobQueue {
@@ -30,7 +30,7 @@ impl Job {
     /// Create a new job
     pub fn new<F, Fut>(name: &str, task: F) -> Self
     where
-        F: FnOnce() -> Fut + Send + 'static,
+        F: Fn() -> Fut + Send + Sync + 'static,
         Fut: Future<Output = Result<(), String>> + Send + 'static,
     {
         Self {
@@ -67,7 +67,7 @@ impl JobQueue {
     /// Add a simple job by name and closure
     pub async fn add<F, Fut>(&self, name: &str, task: F)
     where
-        F: FnOnce() -> Fut + Send + 'static,
+        F: Fn() -> Fut + Send + Sync + 'static,
         Fut: Future<Output = Result<(), String>> + Send + 'static,
     {
         self.enqueue(Job::new(name, task)).await;
@@ -115,7 +115,9 @@ impl JobQueue {
                                     retry = job.retries,
                                     "Job failed, retrying"
                                 );
-                                // Re-queue for retry (need a new task)
+                                // Re-queue the exact same job back via `push_back`
+                                self.jobs.lock().await.push_back(job);
+                                self.notify.notify_one();
                             } else {
                                 tracing::error!(
                                     job_name = %job.name,

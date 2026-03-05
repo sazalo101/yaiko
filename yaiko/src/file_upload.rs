@@ -1,5 +1,6 @@
 use multer::Multipart;
 use std::path::PathBuf;
+use std::collections::HashMap;
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
 
@@ -26,10 +27,15 @@ impl FileUpload {
     }
 }
 
+pub struct ParsedMultipart {
+    pub files: Vec<FileUpload>,
+    pub fields: HashMap<String, String>,
+}
+
 pub async fn parse_multipart(
     body: hyper::Body,
     content_type: &str,
-) -> Result<Vec<FileUpload>, Box<dyn std::error::Error + Send + Sync>> {
+) -> Result<ParsedMultipart, Box<dyn std::error::Error + Send + Sync>> {
     let boundary = content_type
         .split("boundary=")
         .nth(1)
@@ -37,9 +43,12 @@ pub async fn parse_multipart(
 
     let mut multipart = Multipart::new(body, boundary);
     let mut uploads = Vec::new();
+    let mut form_fields = HashMap::new();
 
     while let Some(mut field) = multipart.next_field().await? {
+        let field_name = field.name().map(|n| n.to_string());
         let filename = field.file_name().map(|f| f.to_string());
+        
         if let Some(filename) = filename {
             let content_type = field.content_type()
                 .map(|ct| ct.to_string())
@@ -56,8 +65,20 @@ pub async fn parse_multipart(
                 size: data.len(),
                 data,
             });
+        } else if let Some(name) = field_name {
+            // It's a standard text input field, capture its value bytes seamlessly
+            let mut data = Vec::new();
+            while let Some(chunk) = field.chunk().await? {
+                data.extend_from_slice(&chunk);
+            }
+            if let Ok(text) = String::from_utf8(data) {
+                form_fields.insert(name, text);
+            }
         }
     }
 
-    Ok(uploads)
+    Ok(ParsedMultipart {
+        files: uploads,
+        fields: form_fields,
+    })
 }
