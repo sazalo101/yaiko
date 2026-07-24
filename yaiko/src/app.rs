@@ -81,8 +81,45 @@ impl Handler for App {
 
         match result {
             Ok(Ok(res)) => {
-                // If the response is exactly a 404, we have a chance to override it!
+                // If the response is exactly a 404, check for automatic SEO fallbacks or custom 404 handler
                 if res.status == hyper::StatusCode::NOT_FOUND {
+                    if not_found_req_uri.path() == "/robots.txt" {
+                        let site_url = std::env::var("SITE_URL").unwrap_or_else(|_| {
+                            if let Some(host) = not_found_req_headers.get("host").and_then(|h| h.to_str().ok()) {
+                                format!("https://{}", host)
+                            } else {
+                                "http://localhost:3000".to_string()
+                            }
+                        });
+                        let content = format!("User-agent: *\nAllow: /\nSitemap: {}/sitemap.xml\n", site_url.trim_end_matches('/'));
+                        return Ok(Response::new()
+                            .header("Content-Type", "text/plain; charset=utf-8")
+                            .text(&content));
+                    }
+
+                    if not_found_req_uri.path() == "/sitemap.xml" {
+                        let site_url = std::env::var("SITE_URL").unwrap_or_else(|_| {
+                            if let Some(host) = not_found_req_headers.get("host").and_then(|h| h.to_str().ok()) {
+                                format!("https://{}", host)
+                            } else {
+                                "http://localhost:3000".to_string()
+                            }
+                        });
+                        let base = site_url.trim_end_matches('/');
+                        let content = format!(r#"<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>{}/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
+"#, base);
+                        return Ok(Response::new()
+                            .header("Content-Type", "application/xml; charset=utf-8")
+                            .body(hyper::Body::from(content)));
+                    }
+
                     if let Some(handler) = not_found_handler {
                         // Build a request with the actual URI/method/headers that 404'd
                         let mut builder = hyper::Request::builder()
@@ -147,5 +184,36 @@ mod tests {
 
         let response = app.handle(req).await.unwrap();
         assert_eq!(response.status, hyper::StatusCode::OK);
+    }
+
+    #[tokio::test]
+    async fn app_auto_seo_serves_robots_and_sitemap() {
+        let app = App::new();
+
+        let req_robots = Request::from_hyper(
+            hyper::Request::builder()
+                .method("GET")
+                .uri("/robots.txt")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+        let res_robots = app.handle(req_robots).await.unwrap();
+        assert_eq!(res_robots.status, hyper::StatusCode::OK);
+
+        let req_sitemap = Request::from_hyper(
+            hyper::Request::builder()
+                .method("GET")
+                .uri("/sitemap.xml")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+        let res_sitemap = app.handle(req_sitemap).await.unwrap();
+        assert_eq!(res_sitemap.status, hyper::StatusCode::OK);
     }
 }
