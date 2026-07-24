@@ -17,12 +17,11 @@ An AI chat application built with Yaiko using OpenRouter API.
 OPENROUTER_API_KEY=your-api-key-here
 ```
 
-2. Run:
+2. Run development server:
 ```bash
-cargo run
-# or
 yaiko dev
 ```
+
 
 3. Open http://localhost:3000
 

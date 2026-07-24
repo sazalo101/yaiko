@@ -29,12 +29,10 @@ sqlite3 imghost.db < migrations/001_init.sql
 cp .env.example .env
 # Edit .env and set JIGSAWSTACK_API_KEY for NSFW moderation
 
-# 4. Start dev server
-cargo run --manifest-path ../../yaiko-cli/Cargo.toml -- dev
-
-# Or run directly
-cargo run
+# 4. Start dev server with hot-reloading
+yaiko dev
 ```
+
 
 ## Environment Variables
 

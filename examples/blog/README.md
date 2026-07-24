@@ -13,8 +13,9 @@ A simple static blog built with Yaiko.
 
 ```bash
 cd examples/blog
-cargo run
+yaiko dev
 ```
+
 
 Open [http://localhost:3000](http://localhost:3000)
 
