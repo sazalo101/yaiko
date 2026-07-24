@@ -2,7 +2,9 @@
 
 A modern, free image hosting web application built with the **Yaiko** framework.
 
-🌐 **Live Demo**: [https://imghost.se](https://imghost.se)
+🌐 **Live Demo**: [https://imghost.se](https://imghost.se)  
+📊 **Benchmark Report**: [BENCHMARK.md](./BENCHMARK.md) (11,234 req/sec raw, 3,053 req/sec Nginx SSL)
+
 
 ## Features
 
