@@ -7,7 +7,7 @@ pub async fn get_image(req: Request, pool: SqlitePool) -> Result<Response, BoxEr
     let id = req.param("id").cloned().unwrap_or_default();
 
     let row = sqlx::query(
-        "SELECT id, filename, original_name, mime_type, size_bytes, width, height, view_count, delete_token, created_at FROM images WHERE id = ?"
+        "SELECT id, filename, original_name, mime_type, size_bytes, width, height, view_count, created_at FROM images WHERE id = ?"
     )
     .bind(&id)
     .fetch_optional(&pool)
@@ -15,12 +15,6 @@ pub async fn get_image(req: Request, pool: SqlitePool) -> Result<Response, BoxEr
 
     match row {
         Some(r) => {
-            // Increment view count
-            sqlx::query("UPDATE images SET view_count = view_count + 1 WHERE id = ?")
-                .bind(&id)
-                .execute(&pool)
-                .await?;
-
             let filename: String = r.get("filename");
             let view_count: i64 = r.get("view_count");
 
@@ -34,10 +28,22 @@ pub async fn get_image(req: Request, pool: SqlitePool) -> Result<Response, BoxEr
                 size_bytes: r.get("size_bytes"),
                 width: r.get("width"),
                 height: r.get("height"),
-                view_count: view_count + 1, // reflect the just-incremented count
+                view_count: view_count + 1,
                 created_at: r.get("created_at"),
             };
 
+            // Fire-and-forget view count increment — does NOT block the response.
+            // Spawned as a background task so concurrent reads never queue on the DB write lock.
+            tokio::spawn({
+                let pool = pool.clone();
+                let id = id.clone();
+                async move {
+                    let _ = sqlx::query("UPDATE images SET view_count = view_count + 1 WHERE id = ?")
+                        .bind(&id)
+                        .execute(&pool)
+                        .await;
+                }
+            });
 
             Ok(Response::new().json(&detail)?)
         }

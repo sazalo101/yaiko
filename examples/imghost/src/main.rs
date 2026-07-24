@@ -20,8 +20,13 @@ async fn main() -> Result<(), BoxError> {
     // 1. Database
     let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite://imghost.db".into());
     let pool = SqlitePoolOptions::new()
-        .max_connections(5)
+        .max_connections(20)
         .connect(&db_url)
+        .await?;
+
+    // Enable WAL mode: allows concurrent reads while a write is in progress
+    sqlx::query("PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA cache_size=10000;")
+        .execute(&pool)
         .await?;
 
     tracing::info!("Connected to database");
