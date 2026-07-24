@@ -71,6 +71,8 @@ yaiko-cli/tmp-check-app/
 yaiko-cli/tmp-target/
 *.db
 *.db-journal
+*.db-shm
+*.db-wal
 public/uploads/*
 !public/uploads/.gitkeep
 examples/file-request-links/uploads/*
