@@ -11,13 +11,26 @@ use sqlx::{Pool, Sqlite};
 /// Supports both PostgreSQL and SQLite depending on enabled features.
 /// 
 /// # Example (SQLite)
-/// ```rust
+/// ```rust,no_run
+/// # use yaiko_core::Database;
+/// # async fn demo() -> Result<(), sqlx::Error> {
 /// let db = Database::sqlite("sqlite:./app.db").await?;
+/// # let _ = db;
+/// # Ok(())
+/// # }
 /// ```
 /// 
 /// # Example (PostgreSQL)
-/// ```rust
+/// ```rust,no_run
+/// # #[cfg(feature = "postgres")]
+/// # {
+/// # use yaiko_core::Database;
+/// # async fn demo() -> Result<(), sqlx::Error> {
 /// let db = Database::postgres("postgres://user:pass@localhost/db").await?;
+/// # let _ = db;
+/// # Ok(())
+/// # }
+/// # }
 /// ```
 #[derive(Clone)]
 pub enum Database {

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Viewer — ImgHost</title>
+    <meta name="description" content="View and share this image on ImgHost.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-inner">
+            <a href="/" class="logo">
+                <span class="logo-icon">🖼️</span>
+                <span class="logo-text">ImgHost</span>
+            </a>
+            <a href="/" class="nav-back">← Upload More</a>
+        </div>
+    </header>
+
+    <main class="main viewer-main">
+        <div id="viewer-error" class="viewer-error" style="display:none">
+            <h2>Image not found</h2>
+            <p>This image may have been deleted or the link is incorrect.</p>
+            <a href="/" class="btn btn-primary">Go Home</a>
+        </div>
+
+        <div id="viewer-content" class="viewer-content" style="display:none">
+            <div class="viewer-image-wrapper glass-card">
+                <img id="viewer-img" src="" alt="" class="viewer-img">
+            </div>
+
+            <div class="viewer-details glass-card">
+                <h2 id="viewer-name" class="viewer-name"></h2>
+
+                <div class="viewer-stats">
+                    <div class="stat-item">
+                        <span class="stat-icon">👁️</span>
+                        <span class="stat-value" id="stat-views">0</span>
+                        <span class="stat-label">Views</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">📐</span>
+                        <span class="stat-value" id="stat-dimensions">—</span>
+                        <span class="stat-label">Size</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">💾</span>
+                        <span class="stat-value" id="stat-filesize">0</span>
+                        <span class="stat-label">File Size</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">📅</span>
+                        <span class="stat-value" id="stat-date">—</span>
+                        <span class="stat-label">Uploaded</span>
+                    </div>
+                </div>
+
+                <div class="viewer-links">
+                    <div class="link-group">
+                        <label>Direct Link</label>
+                        <div class="copy-row">
+                            <input type="text" id="v-direct" class="link-input" readonly>
+                            <button class="copy-btn" onclick="copyField('v-direct')">Copy</button>
+                        </div>
+                    </div>
+                    <div class="link-group">
+                        <label>HTML Embed</label>
+                        <div class="copy-row">
+                            <input type="text" id="v-html" class="link-input" readonly>
+                            <button class="copy-btn" onclick="copyField('v-html')">Copy</button>
+                        </div>
+                    </div>
+                    <div class="link-group">
+                        <label>Markdown</label>
+                        <div class="copy-row">
+                            <input type="text" id="v-md" class="link-input" readonly>
+                            <button class="copy-btn" onclick="copyField('v-md')">Copy</button>
+                        </div>
+                    </div>
+                    <div class="link-group">
+                        <label>BBCode</label>
+                        <div class="copy-row">
+                            <input type="text" id="v-bb" class="link-input" readonly>
+                            <button class="copy-btn" onclick="copyField('v-bb')">Copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="viewer-actions">
+                    <a id="btn-open-raw" href="#" target="_blank" class="btn btn-primary">Open Original</a>
+                    <button id="btn-delete" class="btn btn-danger" onclick="showDeleteModal()">Delete Image</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Delete Modal -->
+    <div id="delete-modal" class="modal-overlay" style="display:none">
+        <div class="modal glass-card">
+            <h3>Delete Image</h3>
+            <p>Enter your delete token to permanently remove this image.</p>
+            <input type="text" id="delete-token-input" class="link-input" placeholder="Paste delete token...">
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideDeleteModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">Delete Permanently</button>
+            </div>
+            <p id="delete-error" class="delete-error" style="display:none"></p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Built with <a href="https://github.com/sazalo101/yaiko" target="_blank" class="footer-link">Yaiko</a> &middot; Free Image Hosting</p>
+
+    </footer>
+
+    <script src="/js/viewer.js"></script>
+</body>
+</html>

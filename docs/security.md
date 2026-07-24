@@ -97,6 +97,56 @@ router.use_middleware(auth_middleware);
 Authorization: Bearer <token>
 ```
 
+## Session Authentication
+
+Use `SessionMiddleware` and `SessionAuth` for fullstack app login flows:
+
+```rust
+use std::sync::Arc;
+use yaiko_core::{
+    MemorySessionStore, SessionAuth, SessionMiddleware,
+    login_session, logout_session,
+};
+
+let session_store = Arc::new(MemorySessionStore::new());
+
+let router = router
+    .use_middleware(SessionAuth::new()
+        .skip_path("/")
+        .skip_path("/login")
+        .skip_path("/register"))
+    .use_middleware(SessionMiddleware::new(session_store).secure(false));
+```
+
+Log a user in by writing to the session and rotating the session ID:
+
+```rust
+use yaiko_core::login_session;
+
+let session = req.session.as_ref().expect("session middleware required");
+login_session(session, "user-123", &vec!["admin".to_string()])?;
+```
+
+Log out by destroying the session:
+
+```rust
+use yaiko_core::logout_session;
+
+if let Some(session) = &req.session {
+    logout_session(session);
+}
+```
+
+Protect role-based routes:
+
+```rust
+use yaiko_core::require_role;
+
+if let Err(response) = require_role(&req, "admin") {
+    return Ok(response);
+}
+```
+
 ## CORS
 
 Configure Cross-Origin Resource Sharing:

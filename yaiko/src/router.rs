@@ -15,6 +15,7 @@ pub struct Route {
     pub regex: Regex,
     pub param_names: Vec<String>,
     pub handler: Arc<dyn Handler>,
+    pub strip_prefix: Option<String>,
 }
 
 // Implement Debug manually for Route
@@ -24,6 +25,7 @@ impl fmt::Debug for Route {
             .field("path", &self.path)
             .field("method", &self.method)
             .field("param_names", &self.param_names)
+            .field("strip_prefix", &self.strip_prefix)
             .finish()
     }
 }
@@ -40,7 +42,14 @@ impl Route {
             regex,
             param_names,
             handler,
+            strip_prefix: None,
         }
+    }
+
+    fn mounted(method: Method, path: &str, handler: Arc<dyn Handler>, prefix: &str) -> Self {
+        let mut route = Self::new(method, path, handler);
+        route.strip_prefix = Some(prefix.to_string());
+        route
     }
 
     fn path_to_regex(path: &str) -> (Regex, Vec<String>) {
@@ -173,8 +182,11 @@ impl Router {
     /// 
     /// # Example
     /// ```rust
+    /// use yaiko_core::Router;
+    ///
     /// let router = Router::new()
     ///     .static_files("/static", "./public");
+    /// # let _ = router;
     /// ```
     pub fn static_files(mut self, prefix: &str, dir: &str) -> Self {
         self.static_handler = Some(Arc::new(StaticFiles::new(dir, prefix)));
@@ -200,8 +212,10 @@ impl Router {
         
         let path_pattern = format!("{}/*", prefix);
         // We mount it for all common methods
-        for method in [Method::GET, Method::POST, Method::PUT, Method::DELETE, Method::PATCH, Method::OPTIONS] {
-            self.routes.push(Route::new(method, &path_pattern, Arc::new(router.clone())));
+        for method in [Method::GET, Method::POST, Method::PUT, Method::DELETE, Method::PATCH, Method::OPTIONS, Method::HEAD] {
+            let handler = Arc::new(router.clone());
+            self.routes.push(Route::mounted(method.clone(), &prefix, handler.clone(), &prefix));
+            self.routes.push(Route::mounted(method, &path_pattern, handler, &prefix));
         }
         self
     }
@@ -228,8 +242,7 @@ impl Router {
                     req.params = params;
                 
                 // If it's a mount route (ends with /*), we need to strip the prefix for the sub-router
-                if route.path.ends_with("/*") {
-                    let prefix = route.path.trim_end_matches("/*");
+                if let Some(prefix) = &route.strip_prefix {
                     let mut new_path = original_path.strip_prefix(prefix).unwrap_or(&original_path).to_string();
                     if new_path.is_empty() {
                         new_path = "/".to_string();
@@ -318,5 +331,34 @@ impl Handler for MiddlewareHandler {
 impl Handler for Router {
     async fn handle(&self, req: Request) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
         self.handle_request(req).await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use hyper::Body;
+
+    #[tokio::test]
+    async fn mounted_router_matches_mount_root() {
+        let subrouter = Router::new().get("/", |_req: Request| async {
+            Ok(Response::new().text("subrouter root"))
+        });
+        let router = Router::new().mount("/api", subrouter);
+        let req = Request::from_hyper(
+            hyper::Request::builder()
+                .method("GET")
+                .uri("/api")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+        let response = router.handle_request(req).await.unwrap();
+        let body = hyper::body::to_bytes(response.body).await.unwrap();
+
+        assert_eq!(response.status, hyper::StatusCode::OK);
+        assert_eq!(&body[..], b"subrouter root");
     }
 }

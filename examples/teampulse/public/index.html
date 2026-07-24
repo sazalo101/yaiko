@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>TeamPulse Chat</title>
+    <!-- Modern sans-serif stack -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #f4f6f8;
+            --bg-sidebar: #1e1e24;
+            --bg-chat: #ffffff;
+            --color-primary: #4f46e5;
+            --color-primary-hover: #4338ca;
+            --color-text-main: #111827;
+            --color-text-muted: #6b7280;
+            --color-text-light: #f3f4f6;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-body);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* App Container */
+        #app-container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            background: var(--bg-chat);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            color: var(--color-text-light);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rooms-list {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .room-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            opacity: 0.8;
+        }
+
+        .room-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            opacity: 1;
+        }
+
+        .room-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 1;
+            border-left: 3px solid var(--color-primary);
+        }
+
+        .user-profile {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-logout {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-chat);
+        }
+
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-header h3 {
+            margin: 0;
+            color: var(--color-text-main);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Messages */
+        .msg {
+            display: flex;
+            flex-direction: column;
+            max-width: 75%;
+        }
+
+        .msg.self {
+            align-self: flex-end;
+        }
+
+        .msg.other {
+            align-self: flex-start;
+        }
+
+        .msg-meta {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-bottom: 4px;
+        }
+
+        .msg.self .msg-meta {
+            text-align: right;
+        }
+
+        .msg-bubble {
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: #f3f4f6;
+            color: var(--color-text-main);
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .msg.self .msg-bubble {
+            background: var(--color-primary);
+            color: white;
+            border-bottom-right-radius: 0;
+        }
+
+        .msg.other .msg-bubble {
+            border-bottom-left-radius: 0;
+        }
+
+        .msg.system {
+            align-self: center;
+            background: #fdf6e3;
+            color: #b58900;
+            font-size: 0.85rem;
+            padding: 6px 16px;
+            border-radius: 20px;
+            margin: 8px 0;
+        }
+
+        /* Image Attachments */
+        .msg-attachment {
+            margin-top: 8px;
+            max-width: 100%;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Compose Area */
+        .chat-input-area {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .chat-form {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            outline: none;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--color-primary);
+        }
+
+        .btn-attach {
+            background: #e5e7eb;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-text-muted);
+            transition: background 0.2s;
+        }
+
+        .btn-attach:hover {
+            background: #d1d5db;
+        }
+
+        .btn-send {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 0 24px;
+            height: 44px;
+            border-radius: 24px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-send:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .typing-indicator {
+            padding: 0 20px 10px 20px;
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            font-style: italic;
+            height: 20px;
+        }
+
+        /* Auth Modals */
+        #auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .auth-box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 350px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .auth-box h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--color-text-main);
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--color-text-main);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+        }
+
+        .auth-switch a {
+            color: var(--color-primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .error-msg {
+            color: #dc2626;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Login / Register Modal -->
+    <div id="auth-overlay">
+        <div class="auth-box">
+            <h2 id="auth-title">Login to TeamPulse</h2>
+            <form id="auth-form">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="auth-username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="auth-password" required minlength="6" autocomplete="current-password">
+                </div>
+                <button type="submit" class="auth-btn" id="auth-submit">Login</button>
+                <div class="error-msg" id="auth-error"></div>
+
+                <div class="auth-switch">
+                    <span id="auth-switch-text">Don't have an account? <a id="auth-switch-link">Register</a></span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app-container" class="hidden">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>💬 TeamPulse</h2>
+            </div>
+            <div class="rooms-list" id="rooms-list">
+                <!-- Populated by JS -->
+            </div>
+            <div class="user-profile">
+                <span id="current-username">Username</span>
+                <button class="btn-logout" id="btn-logout">Logout</button>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <div class="chat-header">
+                <h3 id="current-room-name">#general</h3>
+            </div>
+
+            <div class="chat-messages" id="messages">
+                <!-- Messages go here -->
+            </div>
+
+            <div class="typing-indicator" id="typing-indicator"></div>
+
+            <div class="chat-input-area">
+                <form class="chat-form" id="chat-form">
+                    <!-- Hidden file input -->
+                    <input type="file" id="file-input" class="hidden" accept="image/*,.pdf,.doc,.txt">
+                    <button type="button" class="btn-attach" id="btn-attach" title="Attach file">📎</button>
+                    <input type="text" id="msg-input" class="chat-input" placeholder="Message #general..."
+                        autocomplete="off">
+                    <button type="submit" class="btn-send">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let currentUser = null;
+            let currentRoom = 'general';
+            let ws = null;
+            let isRegisterMode = false;
+            let typingTimeout;
+
+            const ROOMS = [
+                { id: 'general', name: 'general' },
+                { id: 'random', name: 'random' }
+            ];
+
+            // Initialization: Check session
+            $.get('/api/auth/me')
+                .done(function (user) {
+                    currentUser = user;
+                    initApp();
+                })
+                .fail(function () {
+                    // Show login modal
+                    $('#auth-overlay').removeClass('hidden');
+                });
+
+            // --- Auth Logic ---
+            $('#auth-switch-link').click(function () {
+                isRegisterMode = !isRegisterMode;
+                if (isRegisterMode) {
+                    $('#auth-title').text('Create Account');
+                    $('#auth-submit').text('Register');
+                    $(this).parent().html(`Already have an account? <a id="auth-switch-link">Login</a>`);
+                } else {
+                    $('#auth-title').text('Login to TeamPulse');
+                    $('#auth-submit').text('Login');
+                    $(this).parent().html(`Don't have an account? <a id="auth-switch-link">Register</a>`);
+                }
+                // Rebind click since we replaced the HTML
+                bindAuthSwitch();
+            });
+
+            function bindAuthSwitch() {
+                $('#auth-switch-link').click(function () {
+                    isRegisterMode = !isRegisterMode;
+                    if (isRegisterMode) {
+                        $('#auth-title').text('Create Account');
+                        $('#auth-submit').text('Register');
+                        $(this).parent().html(`Already have an account? <a id="auth-switch-link">Login</a>`);
+                    } else {
+                        $('#auth-title').text('Login to TeamPulse');
+                        $('#auth-submit').text('Login');
+                        $(this).parent().html(`Don't have an account? <a id="auth-switch-link">Register</a>`);
+                    }
+                    bindAuthSwitch();
+                });
+            }
+
+            $('#auth-form').submit(function (e) {
+                e.preventDefault();
+                $('#auth-error').text('');
+
+                const endpoint = isRegisterMode ? '/api/auth/register' : '/api/auth/login';
+                const data = {
+                    username: $('#auth-username').val().trim(),
+                    password: $('#auth-password').val()
+                };
+
+                $.ajax({
+                    url: endpoint,
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (user) {
+                        currentUser = user;
+                        $('#auth-overlay').addClass('hidden');
+                        initApp();
+                    },
+                    error: function (xhr) {
+                        let msg = "Authentication failed";
+                        if (xhr.responseJSON && xhr.responseJSON.error) msg = xhr.responseJSON.error;
+                        $('#auth-error').text(msg);
+                    }
+                });
+            });
+
+            $('#btn-logout').click(function () {
+                $.post('/api/auth/logout').always(function () {
+                    window.location.reload();
+                });
+            });
+
+            // --- Core App Logic ---
+            function initApp() {
+                $('#auth-overlay').addClass('hidden');
+                $('#app-container').removeClass('hidden');
+                $('#current-username').text(currentUser.username);
+
+                renderRooms();
+                fetchHistory(currentRoom);
+                connectWebSocket();
+            }
+
+            function renderRooms() {
+                let html = '';
+                ROOMS.forEach(r => {
+                    const active = r.id === currentRoom ? 'active' : '';
+                    html += `<div class="room-item ${active}" data-id="${r.id}"># ${r.name}</div>`;
+                });
+                $('#rooms-list').html(html);
+
+                $('.room-item').click(function () {
+                    const id = $(this).data('id');
+                    if (id === currentRoom) return;
+
+                    currentRoom = id;
+                    renderRooms();
+                    $('#current-room-name').text('#' + ROOMS.find(r => r.id === id).name);
+                    $('#msg-input').attr('placeholder', `Message #${ROOMS.find(r => r.id === id).name}...`);
+                    $('#messages').empty();
+
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'join', room: currentRoom }));
+                    }
+                    fetchHistory(currentRoom);
+                });
+            }
+
+            function fetchHistory(room) {
+                $.get(`/api/history/${room}`, function (messages) {
+                    $('#messages').empty();
+                    messages.forEach(appendMessage);
+                    scrollToBottom();
+                });
+            }
+
+            // --- WebSocket Logic ---
+            function connectWebSocket() {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+
+                ws.onopen = function () {
+                    // Join the default room
+                    ws.send(JSON.stringify({ type: 'join', room: currentRoom }));
+                };
+
+                ws.onmessage = function (event) {
+                    try {
+                        const data = JSON.parse(event.data);
+
+                        if (data.type === 'system' && data.room === currentRoom) {
+                            $('#messages').append(`<div class="msg system">${data.content}</div>`);
+                            scrollToBottom();
+                        }
+                        else if (data.type === 'message' && data.room === currentRoom) {
+                            appendMessage(data);
+                            scrollToBottom();
+
+                            if (data.username !== currentUser.username) {
+                                $('#typing-indicator').text(''); // Clear typing indicator
+                            }
+                        }
+                        else if (data.type === 'typing' && data.room === currentRoom && data.username !== currentUser.username) {
+                            $('#typing-indicator').text(`${data.username} is typing...`);
+                            clearTimeout(typingTimeout);
+                            typingTimeout = setTimeout(() => $('#typing-indicator').text(''), 2000);
+                        }
+                    } catch (e) {
+                        console.error("Frame parse error:", e);
+                    }
+                };
+
+                ws.onclose = function () {
+                    // Reconnect logic
+                    setTimeout(connectWebSocket, 3000);
+                };
+            }
+
+            // --- Sending Messages & Typing ---
+            $('#msg-input').on('input', function () {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'typing', room: currentRoom }));
+                }
+            });
+
+            $('#chat-form').submit(function (e) {
+                e.preventDefault();
+                const input = $('#msg-input');
+                const text = input.val().trim();
+
+                if (text && ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        type: 'message',
+                        room: currentRoom,
+                        content: text
+                    }));
+                    input.val('');
+                    $('#typing-indicator').text('');
+                }
+            });
+
+            // --- File Attachments ---
+            $('#btn-attach').click(function () {
+                $('#file-input').click();
+            });
+
+            $('#file-input').change(function () {
+                const file = this.files[0];
+                if (!file) return;
+
+                $('#msg-input').attr('placeholder', `Uploading ${file.name}...`);
+                $('#msg-input').prop('disabled', true);
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    url: '/api/upload',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.send(JSON.stringify({
+                                type: 'message',
+                                room: currentRoom,
+                                content: `Attached file: ${res.filename}`,
+                                attachment_url: res.url
+                            }));
+                        }
+                    },
+                    error: function () {
+                        alert('Upload failed');
+                    },
+                    complete: function () {
+                        $('#msg-input').prop('disabled', false);
+                        $('#msg-input').attr('placeholder', `Message #${ROOMS.find(r => r.id === currentRoom).name}...`);
+                        $('#msg-input').focus();
+                        $('#file-input').val('');
+                    }
+                });
+            });
+
+            // --- Helpers ---
+            function appendMessage(msg) {
+                const isSelf = msg.user_id === currentUser.id;
+                const alignClass = isSelf ? 'self' : 'other';
+                const sender = isSelf ? 'You' : msg.username;
+
+                let attachmentHtml = '';
+                if (msg.attachment_url) {
+                    const ext = msg.attachment_url.split('.').pop().toLowerCase();
+                    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+                        attachmentHtml = `<img src="${msg.attachment_url}" class="msg-attachment" onclick="window.open(this.src)">`;
+                    } else {
+                        attachmentHtml = `<br><a href="${msg.attachment_url}" target="_blank" style="font-size: 0.85em; display: inline-block; margin-top: 5px;">📎 View Attachment</a>`;
+                    }
+                }
+
+                const html = `
+            <div class="msg ${alignClass}">
+                <div class="msg-meta">${sender}</div>
+                <div class="msg-bubble">
+                    ${msg.content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+                    ${attachmentHtml}
+                </div>
+            </div>
+        `;
+                $('#messages').append(html);
+            }
+
+            function scrollToBottom() {
+                const box = $('#messages');
+                box.scrollTop(box[0].scrollHeight);
+            }
+        });
+    </script>
+
+</body>
+
+</html>

@@ -47,13 +47,13 @@ pub use config::Settings;
 pub use error::{AppError, AppResult};
 pub use static_files::StaticFiles;
 pub use database::Database;
-pub use session::{Session, SessionMiddleware, MemorySessionStore, SessionStore};
+pub use session::{Session, SessionHandle, SessionMiddleware, MemorySessionStore, SessionStore};
 
 // Security exports
 pub use security::{SecurityHeaders, RateLimiter, CsrfProtection};
 
 // Auth exports
-pub use auth::{JwtAuth, AuthMiddleware, Claims};
+pub use auth::{JwtAuth, AuthMiddleware, Claims, SessionAuth, login_session, logout_session, require_role};
 
 // Logging exports
 pub use logging::{LoggingMiddleware, init_tracing};
@@ -81,6 +81,8 @@ pub use hyper::{Body, Method, StatusCode};
 pub use serde::{Deserialize, Serialize};
 pub use serde_json::{json, Value};
 pub use async_trait::async_trait;
+pub use hyper;
+pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
 pub use tracing;
 
 // Password hashing helpers

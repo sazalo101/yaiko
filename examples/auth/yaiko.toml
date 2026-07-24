@@ -1,0 +1,22 @@
+[server]
+host = "127.0.0.1"
+port = 3000
+
+[database]
+db_type = "memory"
+url = ""
+
+[security]
+cors_origins = ["http://localhost:3000"]
+rate_limit_requests = 100
+rate_limit_window_secs = 60
+csrf_enabled = false
+
+[seo]
+robots_txt_enabled = false
+sitemap_enabled = false
+sitemap_changefreq = "weekly"
+
+[logging]
+level = "info"
+format = "pretty"

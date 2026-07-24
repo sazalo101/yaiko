@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Upload files securely using this request link.">
+    <title>Upload Files</title>
+    <link rel="stylesheet" href="/static/css/app.css?v=1">
+</head>
+<body class="page page--request">
+    <div class="page">
+        <header class="hero hero--request">
+            <div>
+                <p class="eyebrow">File request</p>
+                <h1 id="request-title">Loading request...</h1>
+                <p id="request-desc" class="sub">Preparing your upload space.</p>
+            </div>
+            <div class="hero__meta">
+                <div class="chip" id="expires-chip">No expiry</div>
+                <div class="chip" id="limit-chip">Unlimited files</div>
+            </div>
+        </header>
+
+        <main class="grid grid--request">
+            <section class="panel">
+                <div class="panel__head">
+                    <h2>Upload files</h2>
+                    <p>Drag and drop or select files from your device.</p>
+                </div>
+                <form id="upload-form" class="form" enctype="multipart/form-data">
+                    <label>
+                        <span>Your name (optional)</span>
+                        <input type="text" name="uploader_name" placeholder="Taylor">
+                    </label>
+                    <label>
+                        <span>Note for the team</span>
+                        <textarea name="note" placeholder="Here are the final logos and brand guide."></textarea>
+                    </label>
+                    <label class="file">
+                        <span>Select files</span>
+                        <input type="file" name="files" multiple required>
+                    </label>
+                    <button class="primary" type="submit">Upload now</button>
+                </form>
+                <div class="panel__footer" id="upload-result"></div>
+            </section>
+
+            <section class="panel panel--list">
+                <div class="panel__head">
+                    <h2>Files received</h2>
+                    <p>Everything uploaded to this request.</p>
+                </div>
+                <div class="request-list" id="file-list">
+                    <div class="empty">No files yet.</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/js/request.js?v=1"></script>
+</body>
+</html>

@@ -45,16 +45,49 @@ pub async fn run() -> anyhow::Result<()> {
     println!("[*] Running pending migrations...");
     
     // Check for DATABASE_URL
-    if std::env::var("DATABASE_URL").is_err() {
-        println!("[!] DATABASE_URL not set. Check your .env file.");
-        return Ok(());
-    }
+    let db_url = match std::env::var("DATABASE_URL") {
+        Ok(url) => url,
+        Err(_) => {
+            println!("[!] DATABASE_URL not set. Check your .env file.");
+            return Ok(());
+        }
+    };
     
     let migrations_dir = Path::new("migrations");
     if !migrations_dir.exists() {
         println!("{} No migrations directory found.", "!".yellow());
         return Ok(());
     }
+    
+    // Connect to database
+    use sqlx::postgres::PgPoolOptions;
+    
+    let pool = PgPoolOptions::new()
+        .max_connections(1)
+        .connect(&db_url)
+        .await?;
+    
+    // Create migrations tracking table if it doesn't exist
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS _yaiko_migrations (
+            id SERIAL PRIMARY KEY,
+            filename VARCHAR(255) NOT NULL UNIQUE,
+            executed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        )"
+    )
+    .execute(&pool)
+    .await?;
+    
+    // Get already-run migrations
+    let applied: Vec<String> = sqlx::query("SELECT filename FROM _yaiko_migrations ORDER BY filename")
+        .fetch_all(&pool)
+        .await?
+        .iter()
+        .map(|row: &sqlx::postgres::PgRow| {
+            use sqlx::Row;
+            row.get("filename")
+        })
+        .collect();
     
     // List migration files
     let mut migrations: Vec<_> = fs::read_dir(migrations_dir)?
@@ -70,18 +103,40 @@ pub async fn run() -> anyhow::Result<()> {
         return Ok(());
     }
     
+    let mut ran = 0;
     for migration in &migrations {
-        let filename = migration.file_name();
-        println!("  [*] Running: {}", filename.to_string_lossy());
+        let filename = migration.file_name().to_string_lossy().to_string();
         
-        // In a real implementation, this would:
-        // 1. Check if migration has been run (using a migrations table)
-        // 2. Execute the SQL
-        // 3. Record the migration as complete
+        if applied.contains(&filename) {
+            continue;
+        }
+        
+        println!("  [*] Running: {}", filename.green());
+        
+        let sql = fs::read_to_string(migration.path())?;
+        // Strip comment-only lines starting with "-- DOWN" onwards
+        let up_sql: String = sql
+            .lines()
+            .take_while(|line| !line.trim().starts_with("-- DOWN"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        
+        sqlx::query(&up_sql).execute(&pool).await?;
+        
+        // Record the migration
+        sqlx::query("INSERT INTO _yaiko_migrations (filename) VALUES ($1)")
+            .bind(&filename)
+            .execute(&pool)
+            .await?;
+        
+        ran += 1;
     }
     
-    println!("\n[OK] Migrations complete! (Note: actual SQL execution requires sqlx CLI)");
-    println!("  For now, use: sqlx migrate run\n");
+    if ran == 0 {
+        println!("[OK] All migrations already applied.");
+    } else {
+        println!("\n[OK] Applied {} migration(s).", ran);
+    }
     
     Ok(())
 }

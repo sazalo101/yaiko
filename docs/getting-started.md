@@ -11,14 +11,15 @@ This guide will help you create your first Yaiko application.
 
 ```bash
 # Clone Yaiko repository
-git clone https://github.com/yaiko/yaiko.git
+git clone https://github.com/sazalo101/yaiko.git
+
 cd yaiko
 
 # Install the CLI globally
-cargo install --path ./yaiko-cli
+cargo install --path ./yaiko-cli --force
 
-# Verify installation
-yaiko --version
+# Verify environment
+yaiko doctor
 ```
 
 ## Create a Project
@@ -62,8 +63,9 @@ Open [http://localhost:3000](http://localhost:3000) to see your app.
 
 The dev server:
 - Watches `src/` for changes
-- Auto-rebuilds on save
-- Hot-reloads the browser
+- Watches `templates/` and `public/`
+- Rebuilds and restarts on save
+- Prints compiler errors directly in the terminal
 
 ## Project Structure
 
@@ -72,9 +74,13 @@ Entry point. Defines routes and starts the server:
 
 ```rust
 use yaiko_core::{App, Router, Server, Request, Response};
+use yaiko_core::Settings;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    dotenvy::dotenv().ok();
+    let settings = Settings::load()?;
+
     let router = Router::new()
         .get("/", home_handler)
         .get("/api/users", controllers::users::list);
@@ -83,7 +89,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .router(router)
         .static_files("./public", "/static");
 
-    let server = Server::new(app, "127.0.0.1:3000".parse()?);
+    let server = Server::new(app, settings.server_addr().parse()?);
     server.run().await?;
     Ok(())
 }
@@ -101,24 +107,43 @@ Framework configuration:
 host = "127.0.0.1"
 port = 3000
 
+[database]
+db_type = "postgres"
+url = ""
+
 [security]
 cors_origins = ["http://localhost:3000"]
 rate_limit_requests = 100
+rate_limit_window_secs = 60
 csrf_enabled = true
 
 [seo]
 robots_txt_enabled = true
 sitemap_enabled = true
+sitemap_changefreq = "weekly"
+
+[logging]
+level = "info"
+format = "pretty"
 ```
 
 ### `.env`
 Environment variables:
 
 ```bash
+HOST=127.0.0.1
+PORT=3000
 DATABASE_URL=postgres://user:pass@localhost/myapp
 JWT_SECRET=your-secret-key
 RUST_LOG=info
+SITE_URL=http://localhost:3000
 ```
+
+Precedence:
+- `.env` is loaded by the generated app first
+- `yaiko.toml` provides defaults
+- `YAIKO__...` environment variables override config values
+- `HOST` and `PORT` override the bind address used by the starter app
 
 ## Next Steps
 

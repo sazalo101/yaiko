@@ -11,7 +11,8 @@ This guide will help you create your first Yaiko application.
 
 ```bash
 # Clone Yaiko repository
-git clone https://github.com/yaiko/yaiko.git
+git clone https://github.com/sazalo101/yaiko.git
+
 cd yaiko
 
 # Install the CLI globally

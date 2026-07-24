@@ -4,7 +4,10 @@ use colored::Colorize;
 use dialoguer::Confirm;
 use indicatif::{ProgressBar, ProgressStyle};
 
+use crate::commands::common;
+
 pub async fn run(name: &str, database: &str) -> anyhow::Result<()> {
+    common::ensure_supported_database(database)?;
     println!("[*] Creating new Yaiko project: {}", name.green());
     
     let project_path = Path::new(name);
@@ -78,6 +81,7 @@ fn create_directories(project_path: &Path) -> anyhow::Result<()> {
 
 fn generate_cargo_toml(project_path: &Path, name: &str, database: &str) -> anyhow::Result<()> {
     let db_feature = if database == "sqlite" { "sqlite" } else { "postgres" };
+    let yaiko_core_dependency = common::resolve_yaiko_core_dependency()?;
     let content = format!(
 r#"[package]
 name = "{name}"
@@ -85,12 +89,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-yaiko-core = {{ path = "../yaiko" }}
+{yaiko_core_dependency}
 tokio = {{ version = "1.0", features = ["full"] }}
 serde = {{ version = "1.0", features = ["derive"] }}
 serde_json = "1.0"
 chrono = {{ version = "0.4", features = ["serde"] }}
-dotenv = "0.15"
+dotenvy = "0.15"
 tracing = "0.1"
 tracing-subscriber = {{ version = "0.3", features = ["env-filter"] }}
 sqlx = {{ version = "0.7", features = ["{db_feature}", "runtime-tokio-rustls", "chrono"] }}
@@ -107,19 +111,23 @@ host = "127.0.0.1"
 port = 3000
 
 [database]
-type = "{database}"
+db_type = "{database}"
+url = ""
 
 [security]
 cors_origins = ["http://localhost:3000"]
 rate_limit_requests = 100
+rate_limit_window_secs = 60
 csrf_enabled = true
 
 [seo]
 robots_txt_enabled = true
 sitemap_enabled = true
+sitemap_changefreq = "weekly"
 
 [logging]
 level = "info"
+format = "pretty"
 "#);
     fs::write(project_path.join("yaiko.toml"), content)?;
     Ok(())
@@ -137,10 +145,11 @@ PORT=3000
 DATABASE_URL={db_url}
 JWT_SECRET=change-me-in-production
 RUST_LOG=info
+SITE_URL=http://localhost:3000
 "#);
     fs::write(project_path.join(".env"), &content)?;
     fs::write(project_path.join(".env.example"), &content)?;
-    fs::write(project_path.join(".gitignore"), "/target\n.env\n")?;
+    fs::write(project_path.join(".gitignore"), "/target\n.env\n.DS_Store\n")?;
     Ok(())
 }
 

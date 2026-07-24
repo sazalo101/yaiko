@@ -1,0 +1,330 @@
+:root {
+    --bg: #f6f1e9;
+    --ink: #1b1b1b;
+    --muted: #6d6a64;
+    --accent: #0b7b6a;
+    --accent-dark: #095b4f;
+    --sun: #f9b35a;
+    --paper: #ffffff;
+    --border: rgba(27, 27, 27, 0.08);
+    --shadow: 0 18px 40px rgba(18, 18, 18, 0.12);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    color: var(--ink);
+    background: radial-gradient(circle at 15% 10%, #ffe7c4, transparent 48%),
+        radial-gradient(circle at 85% 0%, #c7f0e7, transparent 50%),
+        var(--bg);
+    min-height: 100vh;
+}
+
+.page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 24px 64px;
+}
+
+.hero {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    align-items: flex-start;
+    padding: 28px 30px;
+    border-radius: 28px;
+    background: var(--paper);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+
+.hero--request {
+    align-items: center;
+}
+
+.hero__brand {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.brand-mark {
+    display: inline-flex;
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--accent), var(--sun));
+    color: #fff;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.04em;
+}
+
+.hero h1 {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 2.4rem;
+    margin: 0 0 8px;
+}
+
+.hero p {
+    margin: 0;
+    color: var(--muted);
+    max-width: 460px;
+}
+
+.hero__meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin: 0 0 10px;
+}
+
+.sub {
+    max-width: 480px;
+}
+
+.chip {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 28px;
+}
+
+.grid--request {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.panel {
+    background: var(--paper);
+    border-radius: 24px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 30px rgba(15, 15, 15, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.panel--list {
+    min-height: 380px;
+}
+
+.panel__head h2 {
+    margin: 0 0 6px;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 1.4rem;
+}
+
+.panel__head p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+input,
+textarea {
+    font: inherit;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--ink);
+}
+
+textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+.form__row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.file input[type="file"] {
+    padding: 12px;
+    border: 1px dashed var(--border);
+    background: #faf7f2;
+}
+
+.primary {
+    border: none;
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(11, 123, 106, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 26px rgba(11, 123, 106, 0.25);
+}
+
+.panel__footer {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.mono {
+    font-family: \"IBM Plex Mono\", \"SFMono-Regular\", monospace;
+    font-size: 0.85rem;
+    word-break: break-all;
+}
+
+.request-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.request-card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    background: #fffaf2;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.request-card h4 {
+    margin: 0;
+    font-family: "Space Grotesk", sans-serif;
+}
+
+.request-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.request-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.request-actions button,
+.request-actions a {
+    text-decoration: none;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    border: 1px solid var(--border);
+    color: var(--ink);
+    background: #fff;
+    cursor: pointer;
+}
+
+.request-actions a.primary-link {
+    background: #1b1b1b;
+    color: #fff;
+    border: none;
+}
+
+.empty {
+    color: var(--muted);
+    text-align: center;
+    padding: 32px 12px;
+    border: 1px dashed var(--border);
+    border-radius: 16px;
+}
+
+.info {
+    margin-top: 32px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    padding: 24px;
+    border-radius: 22px;
+    background: #fff;
+    border: 1px solid var(--border);
+}
+
+.info h3 {
+    font-family: "Space Grotesk", sans-serif;
+    margin: 0 0 8px;
+}
+
+.info p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.info ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 8px;
+    color: var(--muted);
+}
+
+.info li::before {
+    content: "▸";
+    margin-right: 8px;
+    color: var(--accent);
+}
+
+@media (max-width: 900px) {
+    .grid,
+    .grid--request {
+        grid-template-columns: 1fr;
+    }
+
+    .hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form__row {
+        grid-template-columns: 1fr;
+    }
+
+    .info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

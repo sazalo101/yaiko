@@ -247,8 +247,7 @@ pub fn is_websocket_upgrade(req: &Request) -> bool {
 
 /// Create a WebSocket upgrade response
 /// 
-/// Note: This creates the HTTP upgrade response. You'll need to use
-/// tokio-tungstenite or similar for actual WebSocket handling.
+/// Note: This creates the HTTP upgrade response headers.
 pub fn websocket_upgrade_response(key: &str) -> Response {
     use base64::{Engine as _, engine::general_purpose::STANDARD};
     
@@ -268,4 +267,64 @@ pub fn websocket_upgrade_response(key: &str) -> Response {
         },
         body: Body::empty(),
     }
+}
+
+/// Handle a complete WebSocket upgrade within a route handler.
+///
+/// This function:
+/// 1. Validates the upgrade request and extracts the key
+/// 2. Creates an mpsc channel for outbound messages
+/// 3. Registers the connection with the WebSocketManager
+/// 4. Returns the upgrade response
+///
+/// The caller should spawn the actual frame read/write loop separately
+/// using the returned `Receiver<String>` for outbound messages.
+///
+/// # Example
+/// ```rust,ignore
+/// async fn ws_handler(req: Request) -> Result<Response, BoxError> {
+///     let manager = get_ws_manager(); // your shared manager
+///     let (response, conn_id, rx) = handle_websocket_upgrade(&req, manager.clone(), None).await?;
+///     // Spawn your frame loop using `rx` for outbound and the manager for inbound
+///     Ok(response)
+/// }
+/// ```
+pub async fn handle_websocket_upgrade(
+    req: &Request,
+    manager: Arc<WebSocketManager>,
+    user_id: Option<String>,
+) -> Result<(Response, String, tokio::sync::mpsc::Receiver<String>), Box<dyn std::error::Error + Send + Sync>> {
+    if !is_websocket_upgrade(req) {
+        return Err("Not a WebSocket upgrade request".into());
+    }
+
+    let key = req.headers
+        .get("sec-websocket-key")
+        .and_then(|v| v.to_str().ok())
+        .ok_or("Missing Sec-WebSocket-Key header")?;
+
+    let response = websocket_upgrade_response(key);
+
+    // Create a channel for outbound messages to this connection
+    let (tx, rx) = tokio::sync::mpsc::channel::<String>(256);
+
+    let conn_id = uuid::Uuid::new_v4().to_string();
+    manager.register(conn_id.clone(), user_id, Some(tx)).await;
+
+    Ok((response, conn_id, rx))
+}
+
+/// A message received on a WebSocket connection
+#[derive(Debug, Clone)]
+pub enum WsMessage {
+    /// A text message
+    Text(String),
+    /// A binary message
+    Binary(Vec<u8>),
+    /// A ping message
+    Ping,
+    /// A pong message
+    Pong,
+    /// Connection closed
+    Close,
 }

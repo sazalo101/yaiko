@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A link-in-bio tool example built with Yaiko">
+    <title>Yaiko Link In Bio</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <div class="shell">
+        <section class="panel panel-editor">
+            <div class="panel-header">
+                <p class="eyebrow">Creator Studio</p>
+                <h1>Link In Bio Builder</h1>
+                <p class="lede">Edit profile details, add links, and preview the public page in real time.</p>
+            </div>
+
+            <form id="profile-form" class="stack">
+                <label>
+                    <span>Display Name</span>
+                    <input type="text" name="display_name" placeholder="Marin Sloane" required>
+                </label>
+                <label>
+                    <span>Headline</span>
+                    <input type="text" name="headline" placeholder="What you do in one line" required>
+                </label>
+                <label>
+                    <span>Bio</span>
+                    <textarea name="bio" rows="4" placeholder="Short profile summary"></textarea>
+                </label>
+                <div class="grid">
+                    <label>
+                        <span>Avatar Emoji</span>
+                        <input type="text" name="avatar_emoji" maxlength="4" placeholder="✨">
+                    </label>
+                    <label>
+                        <span>Accent Color</span>
+                        <input type="color" name="accent_color" value="#ff6b35">
+                    </label>
+                </div>
+                <button type="submit" class="button button-primary">Save Profile</button>
+            </form>
+
+            <section class="stack">
+                <div class="section-heading">
+                    <h2>Add Link</h2>
+                    <p>Create a new destination card for your page.</p>
+                </div>
+
+                <form id="link-form" class="stack">
+                    <label>
+                        <span>Title</span>
+                        <input type="text" name="title" placeholder="My latest launch" required>
+                    </label>
+                    <label>
+                        <span>URL</span>
+                        <input type="url" name="url" placeholder="https://example.com" required>
+                    </label>
+                    <label>
+                        <span>Description</span>
+                        <input type="text" name="description" placeholder="Optional supporting detail">
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" name="featured">
+                        <span>Feature this link</span>
+                    </label>
+                    <button type="submit" class="button">Add Link</button>
+                </form>
+            </section>
+
+            <section class="stack">
+                <div class="section-heading">
+                    <h2>Manage Links</h2>
+                    <p>Update featured links, rename cards, or remove old destinations.</p>
+                </div>
+                <div id="link-list" class="link-editor-list"></div>
+            </section>
+        </section>
+
+        <section class="panel panel-preview">
+            <div class="preview-card" id="preview-card">
+                <div class="glow"></div>
+                <div class="profile-top">
+                    <div class="avatar" id="preview-avatar">✨</div>
+                    <p class="slug" id="preview-slug">@creator</p>
+                </div>
+                <div class="profile-copy">
+                    <h2 id="preview-name">Display Name</h2>
+                    <p class="headline" id="preview-headline">One sharp sentence about your work.</p>
+                    <p class="bio" id="preview-bio">Your bio shows up here.</p>
+                </div>
+                <div class="link-stack" id="preview-links"></div>
+                <div class="preview-footer">
+                    <span>Built with Yaiko</span>
+                    <span id="preview-updated">Updated just now</span>
+                </div>
+            </div>
+            <div id="toast" class="toast"></div>
+        </section>
+    </div>
+
+    <template id="editor-link-template">
+        <form class="editor-link-card stack">
+            <input type="hidden" name="id">
+            <label>
+                <span>Title</span>
+                <input type="text" name="title" required>
+            </label>
+            <label>
+                <span>URL</span>
+                <input type="url" name="url" required>
+            </label>
+            <label>
+                <span>Description</span>
+                <input type="text" name="description">
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" name="featured">
+                <span>Featured</span>
+            </label>
+            <div class="actions">
+                <button type="submit" class="button">Save</button>
+                <button type="button" class="button button-danger delete-link">Delete</button>
+            </div>
+        </form>
+    </template>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

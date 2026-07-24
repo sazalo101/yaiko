@@ -37,7 +37,12 @@ jobs:
       
     - name: Build CLI
       run: cargo build --manifest-path yaiko-cli/Cargo.toml
-      
+
+    - name: Verify generated scaffold
+      run: |
+        cargo run --manifest-path yaiko-cli/Cargo.toml -- init ci-smoke-app --database sqlite
+        cargo check --manifest-path ci-smoke-app/Cargo.toml
+
     - name: Check formatting
       run: cargo fmt --manifest-path yaiko/Cargo.toml -- --check
       continue-on-error: true
@@ -63,3 +68,9 @@ jobs:
       
     - name: Build chat example
       run: cargo build --manifest-path examples/chat/Cargo.toml
+
+    - name: Build auth example
+      run: cargo build --manifest-path examples/auth/Cargo.toml
+
+    - name: Build link-in-bio example
+      run: cargo build --manifest-path examples/link-in-bio/Cargo.toml

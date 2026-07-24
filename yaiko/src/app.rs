@@ -62,12 +62,17 @@ impl App {
 impl Handler for App {
     async fn handle(&self, req: Request) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
         if let Some(static_handler) = &self.static_handler {
-            if req.uri.path().starts_with(self.router.static_prefix.as_deref().unwrap_or("/static")) {
+            if static_handler.matches(req.uri.path()) {
                 return static_handler.handle(req).await;
             }
         }
 
         let not_found_handler = self.not_found_handler.clone();
+        
+        // Capture request info before routing consumes it (for potential 404 handler)
+        let not_found_req_uri = req.uri.clone();
+        let not_found_req_method = req.method.clone();
+        let not_found_req_headers = req.headers.clone();
 
         // Wrap the core routing logic inside catch_unwind
         let result = AssertUnwindSafe(async {
@@ -78,13 +83,17 @@ impl Handler for App {
             Ok(Ok(res)) => {
                 // If the response is exactly a 404, we have a chance to override it!
                 if res.status == hyper::StatusCode::NOT_FOUND {
-                    // Because `request` is consumed natively, ideally we'd pass it in if we had it, but we threw it down. 
-                    // To do it correctly, we should just let `not_found_handler` return a Response. We'll mint a dummy request 
-                    // or let `handle_request` take a reference if possible. Actually, passing a dummy `Request` to `not_found` works since it only needs URL.
                     if let Some(handler) = not_found_handler {
-                        // For a simple 404 intercept, we execute the handler yielding its Response.
-                        let mut empty_req = Request::from_hyper(hyper::Request::new(hyper::Body::empty())).await.unwrap();
-                        return Ok(handler(empty_req));
+                        // Build a request with the actual URI/method/headers that 404'd
+                        let mut builder = hyper::Request::builder()
+                            .method(not_found_req_method)
+                            .uri(not_found_req_uri);
+                        for (key, value) in &not_found_req_headers {
+                            builder = builder.header(key, value);
+                        }
+                        let hyper_req = builder.body(hyper::Body::empty()).unwrap();
+                        let actual_req = Request::from_hyper_with_addr(hyper_req, None).await.unwrap();
+                        return Ok(handler(actual_req));
                     }
                 }
                 Ok(res)
@@ -111,5 +120,32 @@ impl Handler for App {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use hyper::Body;
+    use tempfile::tempdir;
+
+    #[tokio::test]
+    async fn app_static_files_honors_custom_prefix() {
+        let dir = tempdir().unwrap();
+        std::fs::write(dir.path().join("hello.txt"), "hi").unwrap();
+
+        let app = App::new().static_files(dir.path().to_str().unwrap(), "/assets");
+        let req = Request::from_hyper(
+            hyper::Request::builder()
+                .method("GET")
+                .uri("/assets/hello.txt")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+        let response = app.handle(req).await.unwrap();
+        assert_eq!(response.status, hyper::StatusCode::OK);
     }
 }

@@ -1,5 +1,6 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Stdio;
+use anyhow::Context;
 use colored::Colorize;
 use notify::RecursiveMode;
 use notify_debouncer_mini::{new_debouncer, DebouncedEventKind};
@@ -7,17 +8,16 @@ use std::sync::mpsc::channel;
 use std::time::Duration;
 use tokio::process::Command;
 
+use crate::commands::common;
+
 pub async fn run(host: &str, port: u16) -> anyhow::Result<()> {
     println!("[*] Starting development server...");
-    
-    // Check if we're in a Yaiko project
-    if !Path::new("Cargo.toml").exists() || !Path::new("yaiko.toml").exists() {
-        println!("[!] Not a Yaiko project. Run 'yaiko init' first.");
-        return Ok(());
-    }
+    let project_dir = PathBuf::from(".");
+    common::ensure_yaiko_project(&project_dir)?;
+    let project_name = common::load_project_name(&project_dir)?;
     
     // Initial build and run
-    let mut child = start_server(host, port).await?;
+    let mut child = start_server(&project_dir, &project_name, host, port).await?;
     
     println!("[*] Watching for changes...");
     println!("  Press {} to stop\n", "Ctrl+C".yellow());
@@ -34,6 +34,10 @@ pub async fn run(host: &str, port: u16) -> anyhow::Result<()> {
     if Path::new("templates").exists() {
         debouncer.watcher().watch(Path::new("templates"), RecursiveMode::Recursive)?;
     }
+
+    if Path::new("public").exists() {
+        debouncer.watcher().watch(Path::new("public"), RecursiveMode::Recursive)?;
+    }
     
     // Main event loop
     loop {
@@ -48,9 +52,10 @@ pub async fn run(host: &str, port: u16) -> anyhow::Result<()> {
                     
                     // Kill existing process
                     let _ = child.kill().await;
+                    let _ = child.wait().await;
                     
                     // Restart server
-                    child = start_server(host, port).await?;
+                    child = start_server(&project_dir, &project_name, host, port).await?;
                 }
             }
             Ok(Err(e)) => {
@@ -66,35 +71,41 @@ pub async fn run(host: &str, port: u16) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn start_server(host: &str, port: u16) -> anyhow::Result<tokio::process::Child> {
+async fn start_server(
+    project_dir: &Path,
+    project_name: &str,
+    host: &str,
+    port: u16,
+) -> anyhow::Result<tokio::process::Child> {
     println!("[*] Building project...");
     
-    // Run cargo build
+    let manifest = common::cargo_manifest(project_dir);
     let build_status = Command::new("cargo")
-        .args(["build"])
+        .args(["build", "--manifest-path"])
+        .arg(&manifest)
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .status()
-        .await?;
+        .await
+        .context("Failed to run 'cargo build'. Is Cargo installed?")?;
     
     if !build_status.success() {
-        println!("[!] Build failed!");
-        // Return a placeholder child that immediately exits
-        return Ok(Command::new("echo")
-            .arg("Build failed")
-            .spawn()?);
+        anyhow::bail!("Build failed. Fix the Rust errors above and save again to retry.");
     }
     
     println!("[OK] Starting server on {}:{}...", host, port);
     
-    // Start the server
     let child = Command::new("cargo")
-        .args(["run"])
+        .args(["run", "--manifest-path"])
+        .arg(&manifest)
+        .arg("--bin")
+        .arg(project_name)
         .env("HOST", host)
         .env("PORT", port.to_string())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
-        .spawn()?;
+        .spawn()
+        .with_context(|| format!("Failed to start '{}'.", project_name))?;
     
     Ok(child)
 }

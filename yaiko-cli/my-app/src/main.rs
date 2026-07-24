@@ -1,6 +1,5 @@
-use yaiko_core::{App, Router, Server, Request, Response, StatusCode, json, Settings, tracing};
+use yaiko_core::{App, Router, Server, Request, Response, Settings, StatusCode, json, tracing};
 use yaiko_core::middleware::{Logger, Cors};
-use yaiko_core::security::{SecurityHeaders, RateLimiter};
 use std::net::SocketAddr;
 
 mod controllers;
@@ -9,7 +8,8 @@ mod middleware;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    dotenv::dotenv().ok();
+    dotenvy::dotenv().ok();
+    let settings = Settings::load()?;
     
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
@@ -34,8 +34,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     
     let addr: SocketAddr = format!(
         "{}:{}",
-        std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string()),
-        std::env::var("PORT").unwrap_or_else(|_| "3000".to_string())
+        std::env::var("HOST").unwrap_or(settings.server.host),
+        std::env::var("PORT").unwrap_or_else(|_| settings.server.port.to_string())
     ).parse()?;
     
     let server = Server::new(app, addr);
@@ -62,8 +62,7 @@ async fn health_handler(_req: Request) -> Result<Response, Box<dyn std::error::E
 
 async fn robots_handler(_req: Request) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
     Ok(Response::new()
-        .body("User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n")
-        .header("Content-Type", "text/plain")
+        .text("User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n")
         .status(StatusCode::OK))
 }
 
@@ -74,7 +73,7 @@ async fn sitemap_handler(_req: Request) -> Result<Response, Box<dyn std::error::
 <url><loc>{}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
 </urlset>"#, host);
     Ok(Response::new()
-        .body(&content)
+        .body(content.into())
         .header("Content-Type", "application/xml")
         .status(StatusCode::OK))
 }

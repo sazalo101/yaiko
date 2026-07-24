@@ -115,7 +115,10 @@ impl JobQueue {
                                     retry = job.retries,
                                     "Job failed, retrying"
                                 );
-                                // Re-queue the exact same job back via `push_back`
+                                // Exponential backoff: 2^retries seconds
+                                let backoff = tokio::time::Duration::from_secs(2u64.pow(job.retries));
+                                tokio::time::sleep(backoff).await;
+                                // Re-queue the job back
                                 self.jobs.lock().await.push_back(job);
                                 self.notify.notify_one();
                             } else {

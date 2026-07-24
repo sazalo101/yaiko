@@ -1,17 +1,17 @@
 use std::path::Path;
 use std::process::Stdio;
+use anyhow::Context;
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
 use tokio::process::Command;
 
+use crate::commands::common;
+
 pub async fn run(release: bool) -> anyhow::Result<()> {
     println!("[*] Building project for production...");
-    
-    // Check if we're in a Yaiko project
-    if !Path::new("Cargo.toml").exists() {
-        println!("[!] Not a Yaiko project. Run 'yaiko init' first.");
-        return Ok(());
-    }
+    let project_dir = Path::new(".");
+    common::ensure_yaiko_project(project_dir)?;
+    let project_name = common::load_project_name(project_dir)?;
     
     let pb = ProgressBar::new_spinner();
     pb.set_style(ProgressStyle::default_spinner()
@@ -29,14 +29,16 @@ pub async fn run(release: bool) -> anyhow::Result<()> {
     
     let build_status = Command::new("cargo")
         .args(&args)
+        .arg("--manifest-path")
+        .arg(common::cargo_manifest(project_dir))
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .status()
-        .await?;
+        .await
+        .context("Failed to run 'cargo build'. Is Cargo installed?")?;
     
     if !build_status.success() {
-        pb.finish_with_message("[!] Build failed!".to_string());
-        return Ok(());
+        anyhow::bail!("Build failed. Fix the Rust errors above and rerun 'yaiko build'.");
     }
     
     // Step 2: Optimize assets (future: minify CSS/JS)
@@ -56,8 +58,8 @@ pub async fn run(release: bool) -> anyhow::Result<()> {
         "./target/debug/"
     };
     
-    println!("\n  Binary location: {}", binary_path.cyan());
-    println!("  To run: ./target/release/<your-app-name>\n");
+    println!("\n  Binary location: {}{}", binary_path.cyan(), project_name.cyan());
+    println!("  To run: {}{}\n", binary_path, project_name);
     
     Ok(())
 }

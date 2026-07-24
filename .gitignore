@@ -63,3 +63,17 @@ logs/
 # Output directories from examples
 examples/*/output/
 output/
+
+# Temporary test & build directories
+phase1-smoke/
+tmp-local-app/
+yaiko-cli/tmp-check-app/
+yaiko-cli/tmp-target/
+*.db
+*.db-journal
+public/uploads/*
+!public/uploads/.gitkeep
+examples/file-request-links/uploads/*
+!examples/file-request-links/uploads/.gitkeep
+
+

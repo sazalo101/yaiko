@@ -5,7 +5,8 @@ edition = "2021"
 authors = ["Yaiko Team"]
 description = "A modern, production-ready fullstack framework for Rust + jQuery"
 license = "MIT"
-repository = "https://github.com/yaiko/yaiko"
+repository = "https://github.com/sazalo101/yaiko"
+
 keywords = ["web", "framework", "cli", "fullstack"]
 
 [[bin]]
@@ -46,3 +47,4 @@ thiserror = "1.0"
 
 # Date/time
 chrono = "0.4"
+sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio-rustls", "chrono"] }

@@ -43,6 +43,9 @@ enum Commands {
         #[arg(short, long)]
         release: bool,
     },
+
+    /// Check whether the local environment is ready for Yaiko
+    Doctor,
     
     /// Generate database migrations
     Migrate {
@@ -113,6 +116,9 @@ async fn main() -> anyhow::Result<()> {
         }
         Commands::Build { release } => {
             commands::build::run(release).await?;
+        }
+        Commands::Doctor => {
+            commands::doctor::run().await?;
         }
         Commands::Migrate { action } => {
             match action {

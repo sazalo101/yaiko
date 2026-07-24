@@ -16,8 +16,20 @@ impl StaticFiles {
         }
     }
 
+    pub fn matches(&self, path: &str) -> bool {
+        path.starts_with(&self.prefix)
+    }
+
+    pub fn prefix(&self) -> &str {
+        &self.prefix
+    }
+
     async fn serve_file(&self, path: &str) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
-        let file_path = Path::new(&self.dir).join(path.trim_start_matches('/'));
+        let relative_path = path.trim_start_matches('/');
+        let mut file_path = Path::new(&self.dir).join(relative_path);
+        if file_path.is_dir() {
+            file_path = file_path.join("index.html");
+        }
         
         // Security check: prevent directory traversal
         let canonical_dir = std::fs::canonicalize(&self.dir)?;

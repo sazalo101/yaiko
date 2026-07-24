@@ -1,6 +1,7 @@
 use hyper::{Body, Request as HyperRequest, Method, Uri};
 use serde_json::Value;
 use std::collections::HashMap;
+use std::net::SocketAddr;
 
 #[derive(Debug)]
 pub struct Request {
@@ -16,11 +17,20 @@ pub struct Request {
     // Fields used by middleware
     pub user_id: Option<String>,
     pub user_roles: Vec<String>,
-    pub session: Option<crate::session::Session>,
+    pub session: Option<crate::session::SessionHandle>,
+    pub extensions: hyper::http::Extensions,
+    pub remote_addr: Option<SocketAddr>,
 }
 
 impl Request {
     pub async fn from_hyper(req: HyperRequest<Body>) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+        Self::from_hyper_with_addr(req, None).await
+    }
+
+    pub async fn from_hyper_with_addr(
+        req: HyperRequest<Body>,
+        remote_addr: Option<SocketAddr>,
+    ) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let (parts, body) = req.into_parts();
         let query = Self::parse_query(&parts.uri);
         
@@ -37,6 +47,8 @@ impl Request {
             user_id: None,
             user_roles: Vec::new(),
             session: None,
+            extensions: parts.extensions,
+            remote_addr,
         })
     }
 
@@ -57,17 +69,21 @@ impl Request {
 
     pub async fn form_data(&mut self) -> Result<HashMap<String, String>, Box<dyn std::error::Error + Send + Sync>> {
         if self.form_data_cache.is_none() {
-            let body_bytes = hyper::body::to_bytes(&mut self.body).await?;
+            let body = std::mem::replace(&mut self.body, hyper::Body::empty());
+            let body_bytes = hyper::body::to_bytes(body).await?;
+            self.body = hyper::Body::from(body_bytes.clone());
             if !body_bytes.is_empty() {
-                let parsed = percent_encoding::percent_decode_str(
-                    &String::from_utf8_lossy(&body_bytes)
-                ).decode_utf8_lossy().into_owned();
-                
+                let raw = String::from_utf8_lossy(&body_bytes);
                 let mut map = HashMap::new();
-                for pair in parsed.split('&') {
-                    if let Some((key, value)) = pair.split_once('=') {
-                        map.insert(key.to_string(), value.to_string());
+                for pair in raw.split('&') {
+                    if pair.is_empty() {
+                        continue;
                     }
+
+                    let mut parts = pair.splitn(2, '=');
+                    let key = decode_form_component(parts.next().unwrap_or_default());
+                    let value = decode_form_component(parts.next().unwrap_or_default());
+                    map.insert(key, value);
                 }
                 self.form_data_cache = Some(map);
             } else {
@@ -85,6 +101,34 @@ impl Request {
         self.query.get(key)
     }
 
+    /// Shorthand to get a header value as a string
+    pub fn header(&self, key: &str) -> Option<&str> {
+        self.headers.get(key).and_then(|v| v.to_str().ok())
+    }
+
+    /// Check if the request Content-Type is JSON
+    pub fn is_json(&self) -> bool {
+        self.header("content-type")
+            .map(|ct| ct.contains("application/json"))
+            .unwrap_or(false)
+    }
+
+    /// Check if the request is an AJAX/XHR request
+    pub fn is_ajax(&self) -> bool {
+        self.header("x-requested-with")
+            .map(|v| v.eq_ignore_ascii_case("xmlhttprequest"))
+            .unwrap_or(false)
+    }
+
+    /// Get the raw body bytes without consuming the body stream
+    pub async fn body_bytes(&mut self) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
+        let body = std::mem::replace(&mut self.body, hyper::Body::empty());
+        let body_bytes = hyper::body::to_bytes(body).await?;
+        // Repopulate so downstream can still read it
+        self.body = hyper::Body::from(body_bytes.clone());
+        Ok(body_bytes.to_vec())
+    }
+
     fn parse_query(uri: &Uri) -> HashMap<String, String> {
         let mut query = HashMap::new();
         if let Some(query_str) = uri.query() {
@@ -98,5 +142,35 @@ impl Request {
             }
         }
         query
+    }
+}
+
+fn decode_form_component(value: &str) -> String {
+    percent_encoding::percent_decode_str(&value.replace('+', " "))
+        .decode_utf8_lossy()
+        .into_owned()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn form_data_preserves_encoded_delimiters_and_body() {
+        let req = hyper::Request::builder()
+            .method(Method::POST)
+            .uri("/submit")
+            .body(Body::from("title=fish%26chips&note=a%3Db+c"))
+            .unwrap();
+
+        let mut req = Request::from_hyper(req).await.unwrap();
+        let form = req.form_data().await.unwrap();
+
+        assert_eq!(form.get("title"), Some(&"fish&chips".to_string()));
+        assert_eq!(form.get("note"), Some(&"a=b c".to_string()));
+        assert_eq!(
+            String::from_utf8(req.body_bytes().await.unwrap()).unwrap(),
+            "title=fish%26chips&note=a%3Db+c"
+        );
     }
 }

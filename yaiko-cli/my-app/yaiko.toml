@@ -4,16 +4,20 @@ host = "127.0.0.1"
 port = 3000
 
 [database]
-type = "postgres"
+db_type = "postgres"
+url = ""
 
 [security]
 cors_origins = ["http://localhost:3000"]
 rate_limit_requests = 100
+rate_limit_window_secs = 60
 csrf_enabled = true
 
 [seo]
 robots_txt_enabled = true
 sitemap_enabled = true
+sitemap_changefreq = "weekly"
 
 [logging]
 level = "info"
+format = "pretty"

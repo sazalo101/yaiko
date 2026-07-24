@@ -5,7 +5,8 @@ edition = "2021"
 authors = ["Yaiko Team"]
 description = "A modern, production-ready fullstack web framework for Rust"
 license = "MIT"
-repository = "https://github.com/yaiko/yaiko"
+repository = "https://github.com/sazalo101/yaiko"
+
 keywords = ["web", "framework", "async", "fullstack", "yaiko"]
 categories = ["web-programming::http-server"]
 
@@ -66,6 +67,7 @@ base64 = "0.21"
 notify = "6.0"
 walkdir = "2.5.0"
 futures = "0.3.32"
+tokio-util = { version = "0.7.18", features = ["io"] }
 
 [dev-dependencies]
 tokio-test = "0.4"

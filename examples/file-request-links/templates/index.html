@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create file request links and collect files from clients.">
+    <title>File Request Links</title>
+    <link rel="stylesheet" href="/static/css/app.css?v=1">
+</head>
+<body>
+    <div class="page">
+        <header class="hero">
+            <div class="hero__brand">
+                <span class="brand-mark">FRL</span>
+                <div>
+                    <h1>File Request Links</h1>
+                    <p>Fast, branded intake links for your agency. Share once, receive files immediately.</p>
+                </div>
+            </div>
+            <div class="hero__meta">
+                <div class="chip">Dogfood ready</div>
+                <div class="chip">No login required for clients</div>
+            </div>
+        </header>
+
+        <main class="grid">
+            <section class="panel">
+                <div class="panel__head">
+                    <h2>Create a new request</h2>
+                    <p>Generate a shareable link in seconds.</p>
+                </div>
+                <form id="create-form" class="form">
+                    <label>
+                        <span>Request title</span>
+                        <input type="text" name="title" placeholder="Website assets for April" required>
+                    </label>
+                    <label>
+                        <span>Description</span>
+                        <textarea name="description" placeholder="Logo, brand colors, and reference screenshots."></textarea>
+                    </label>
+                    <div class="form__row">
+                        <label>
+                            <span>Max files (optional)</span>
+                            <input type="number" name="max_files" min="1" placeholder="10">
+                        </label>
+                        <label>
+                            <span>Expires in days</span>
+                            <input type="number" name="expires_in_days" min="1" placeholder="14">
+                        </label>
+                    </div>
+                    <button class="primary" type="submit">Create request link</button>
+                </form>
+                <div class="panel__footer" id="create-result"></div>
+            </section>
+
+            <section class="panel panel--list">
+                <div class="panel__head">
+                    <h2>Active requests</h2>
+                    <p>Share, track, and download client uploads.</p>
+                </div>
+                <div class="request-list" id="request-list">
+                    <div class="empty">No requests yet. Create your first link.</div>
+                </div>
+            </section>
+        </main>
+
+        <section class="info">
+            <div>
+                <h3>Built for agencies</h3>
+                <p>Collect assets without onboarding clients. Every link is a branded drop‑off point with automatic file tracking.</p>
+            </div>
+            <ul>
+                <li>Instant share links for clients</li>
+                <li>Upload tracking and size totals</li>
+                <li>Download files with one click</li>
+            </ul>
+        </section>
+    </div>
+
+    <script src="/static/js/app.js?v=1"></script>
+</body>
+</html>

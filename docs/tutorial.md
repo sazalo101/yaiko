@@ -11,7 +11,8 @@ This tutorial walks you through building a complete web application with Yaiko, 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yaiko/yaiko.git
+git clone https://github.com/sazalo101/yaiko.git
+
 cd yaiko
 
 # Install the CLI

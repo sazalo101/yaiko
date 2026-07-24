@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImgHost — Free Image Hosting</title>
+    <meta name="description" content="Upload and share images instantly. Free, fast, no signup required.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <a href="/" class="logo">
+                <span class="logo-icon">🖼️</span>
+                <span class="logo-text">ImgHost</span>
+            </a>
+            <nav class="nav">
+                <span class="nav-tag">Free &middot; Fast &middot; No Signup</span>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Upload Section -->
+    <main class="main">
+        <section class="hero">
+            <h1 class="hero-title">Share Images <span class="gradient-text">Instantly</span></h1>
+            <p class="hero-subtitle">Drag & drop or select images. Up to 10 MB each. JPEG, PNG, GIF, WebP, SVG, BMP.</p>
+
+            <div id="dropzone" class="dropzone">
+                <div class="dropzone-content">
+                    <div class="dropzone-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <p class="dropzone-label">Drop images here or <label for="file-input" class="dropzone-browse">browse</label></p>
+                    <input type="file" id="file-input" multiple accept="image/*" hidden>
+                </div>
+                <div class="dropzone-progress" id="upload-progress" style="display:none">
+                    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+                    <p class="progress-text" id="progress-text">Uploading...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Upload Results -->
+        <section id="upload-results" class="results-section" style="display:none">
+            <h2 class="section-title">Uploaded Successfully 🎉</h2>
+            <div id="results-list" class="results-list"></div>
+        </section>
+    </main>
+
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Built with <a href="https://github.com/sazalo101/yaiko" target="_blank" class="footer-link">Yaiko</a> &middot; Free Image Hosting &middot; 10 MB Max</p>
+
+    </footer>
+
+    <!-- Image Upload Result Card Template -->
+    <template id="result-card-template">
+        <div class="result-card glass-card">
+            <div class="result-preview">
+                <img src="" alt="" class="result-img">
+            </div>
+            <div class="result-info">
+                <h3 class="result-name"></h3>
+                <div class="result-meta">
+                    <span class="meta-item"></span>
+                    <span class="meta-item meta-size"></span>
+                </div>
+                <div class="result-links">
+                    <div class="link-group">
+                        <label>Direct Link</label>
+                        <div class="copy-row">
+                            <input type="text" class="link-input direct-link" readonly>
+                            <button class="copy-btn" data-target="direct-link">Copy</button>
+                        </div>
+                    </div>
+                    <div class="link-group">
+                        <label>Viewer Page</label>
+                        <div class="copy-row">
+                            <input type="text" class="link-input viewer-link" readonly>
+                            <button class="copy-btn" data-target="viewer-link">Copy</button>
+                        </div>
+                    </div>
+                    <div class="link-group">
+                        <label>HTML Embed</label>
+                        <div class="copy-row">
+                            <input type="text" class="link-input html-link" readonly>
+                            <button class="copy-btn" data-target="html-link">Copy</button>
+                        </div>
+                    </div>
+                    <div class="link-group">
+                        <label>Markdown</label>
+                        <div class="copy-row">
+                            <input type="text" class="link-input md-link" readonly>
+                            <button class="copy-btn" data-target="md-link">Copy</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="result-delete">
+                    <span class="delete-token-label">Delete Token: <code class="delete-token-code"></code></span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

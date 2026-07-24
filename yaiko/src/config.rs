@@ -35,6 +35,7 @@ impl Default for ServerConfig {
 #[derive(Debug, Clone, Deserialize)]
 pub struct DatabaseConfig {
     #[serde(default = "default_db_type")]
+    #[serde(alias = "type")]
     pub db_type: String,
     pub url: Option<String>,
 }
