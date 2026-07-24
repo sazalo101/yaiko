@@ -6,6 +6,7 @@ Welcome to **Yaiko** — a modern, production-ready fullstack web framework for 
 
 | Guide                                 | Description                           |
 | ------------------------------------- | ------------------------------------- |
+| [CLI Reference](cli.md)               | Full CLI command & flag reference     |
 | [Tutorial](tutorial.md)               | Build an app from start to finish     |
 | [Getting Started](getting-started.md) | Install and create your first project |
 | [Routing](routing.md)                 | Define routes and handlers            |

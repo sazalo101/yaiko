@@ -59,18 +59,22 @@ yaiko build --release
 - **`examples/link-in-bio`**: Link tree / Bio page generator
 - **`examples/file-request-links`**: Secure file request and sharing application
 
-## CLI Commands
+## CLI Reference (`yaiko --help`)
 
-| Command                            | Description                      |
-| ---------------------------------- | -------------------------------- |
-| `yaiko init <name>`                | Create a new project             |
-| `yaiko doctor`                     | Validate local Yaiko setup       |
-| `yaiko dev`                        | Start dev server with hot-reload |
-| `yaiko build`                      | Build for production             |
-| `yaiko migrate create <name>`      | Create a migration               |
-| `yaiko migrate run`                | Run pending migrations           |
-| `yaiko generate controller <name>` | Generate a controller            |
-| `yaiko generate model <name>`      | Generate a model                 |
+| Command / Subcommand | Options & Flags | Description |
+| -------------------- | --------------- | ----------- |
+| `yaiko init <name>` | `-d, --database <type>` *(default: postgres)* | Initialize a new Yaiko project (supports `postgres`, `sqlite`) |
+| `yaiko dev` | `-p, --port <port>` *(default: 3000)*<br>`--host <host>` *(default: 127.0.0.1)* | Start dev server with auto hot-reload |
+| `yaiko build` | `-r, --release` | Build binary with release optimizations |
+| `yaiko doctor` | — | Check if Rust, Cargo, SQLx & CLI environment are ready |
+| `yaiko migrate create <name>` | — | Create a new SQL migration file in `migrations/` |
+| `yaiko migrate run` | — | Execute pending database migrations |
+| `yaiko migrate rollback` | — | Roll back the last applied migration |
+| `yaiko migrate status` | — | View migration execution history and pending status |
+| `yaiko generate controller <name>` | — | Scaffold a new route controller in `src/controllers/` |
+| `yaiko generate model <name>` | — | Scaffold a new database model in `src/models/` |
+| `yaiko generate middleware <name>` | — | Scaffold a new request middleware in `src/middleware/` |
+
 
 ## Project Structure
 
