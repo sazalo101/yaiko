@@ -11,7 +11,9 @@ A modern, production-ready fullstack web framework for **Rust + jQuery**.
        ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝ ╚═════╝ 
 ```
 
-**Repository**: [https://github.com/sazalo101/yaiko](https://github.com/sazalo101/yaiko)
+**Repository**: [https://github.com/sazalo101/yaiko](https://github.com/sazalo101/yaiko)  
+📖 **[The Yaiko Book](BOOK.md)** — Full framework guide, architecture, benchmarks & project ideas  
+📚 **[Documentation](docs/)** — Getting started, routing, database, security, deployment & more
 
 ## Features
 
