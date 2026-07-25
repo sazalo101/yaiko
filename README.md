@@ -31,18 +31,14 @@ A modern, production-ready fullstack web framework for **Rust + jQuery**.
 ## Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/sazalo101/yaiko.git
-cd yaiko
-
-# Install the CLI from this repo
-cargo install --path yaiko-cli --force
+# Install Yaiko from crates.io
+cargo install yaiko
 
 # Check that your local environment is ready
 yaiko doctor
 
 # Create a new project
-yaiko init my-app
+yaiko init my-app -d sqlite
 
 # Start developing
 cd my-app
@@ -50,6 +46,14 @@ yaiko dev
 
 # Production build
 yaiko build --release
+```
+
+### Install from Source (alternative)
+
+```bash
+git clone https://github.com/sazalo101/yaiko.git
+cd yaiko
+cargo install --path yaiko-cli --force
 ```
 
 ## Built-in Examples
