@@ -2,6 +2,8 @@ use std::fs;
 use std::path::Path;
 use colored::Colorize;
 use chrono::Utc;
+use sqlx::sqlite::SqlitePoolOptions;
+use sqlx::postgres::PgPoolOptions;
 
 pub async fn create(name: &str) -> anyhow::Result<()> {
     println!("[*] Creating migration: {}", name.green());
@@ -25,8 +27,7 @@ pub async fn create(name: &str) -> anyhow::Result<()> {
 --     id SERIAL PRIMARY KEY,
 --     email VARCHAR(255) NOT NULL UNIQUE,
 --     password_hash VARCHAR(255) NOT NULL,
---     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
---     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 -- );
 
 -- DOWN migration (for rollback)
@@ -42,6 +43,9 @@ pub async fn create(name: &str) -> anyhow::Result<()> {
 }
 
 pub async fn run() -> anyhow::Result<()> {
+    // Load .env file automatically
+    dotenvy::dotenv().ok();
+    
     println!("[*] Running pending migrations...");
     
     // Check for DATABASE_URL
@@ -59,36 +63,6 @@ pub async fn run() -> anyhow::Result<()> {
         return Ok(());
     }
     
-    // Connect to database
-    use sqlx::postgres::PgPoolOptions;
-    
-    let pool = PgPoolOptions::new()
-        .max_connections(1)
-        .connect(&db_url)
-        .await?;
-    
-    // Create migrations tracking table if it doesn't exist
-    sqlx::query(
-        "CREATE TABLE IF NOT EXISTS _yaiko_migrations (
-            id SERIAL PRIMARY KEY,
-            filename VARCHAR(255) NOT NULL UNIQUE,
-            executed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        )"
-    )
-    .execute(&pool)
-    .await?;
-    
-    // Get already-run migrations
-    let applied: Vec<String> = sqlx::query("SELECT filename FROM _yaiko_migrations ORDER BY filename")
-        .fetch_all(&pool)
-        .await?
-        .iter()
-        .map(|row: &sqlx::postgres::PgRow| {
-            use sqlx::Row;
-            row.get("filename")
-        })
-        .collect();
-    
     // List migration files
     let mut migrations: Vec<_> = fs::read_dir(migrations_dir)?
         .filter_map(|e| e.ok())
@@ -99,45 +73,136 @@ pub async fn run() -> anyhow::Result<()> {
     migrations.sort_by_key(|e| e.file_name());
     
     if migrations.is_empty() {
-        println!("[OK] No migrations to run.");
+        println!("[OK] No migrations found in migrations/ directory.");
         return Ok(());
     }
+
+    if db_url.starts_with("sqlite:") {
+        run_sqlite(&db_url, &migrations).await?;
+    } else if db_url.starts_with("postgres:") || db_url.starts_with("postgresql:") {
+        run_postgres(&db_url, &migrations).await?;
+    } else {
+        println!("[!] Unsupported DATABASE_URL protocol. Supported: sqlite:, postgres:, postgresql:");
+    }
     
+    Ok(())
+}
+
+async fn run_sqlite(db_url: &str, migrations: &[fs::DirEntry]) -> anyhow::Result<()> {
+    let pool = SqlitePoolOptions::new()
+        .max_connections(1)
+        .connect(db_url)
+        .await?;
+
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS _yaiko_migrations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            filename TEXT NOT NULL UNIQUE,
+            executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )"
+    )
+    .execute(&pool)
+    .await?;
+
+    let applied: Vec<String> = sqlx::query_as::<_, (String,)>("SELECT filename FROM _yaiko_migrations ORDER BY filename")
+        .fetch_all(&pool)
+        .await?
+        .into_iter()
+        .map(|r| r.0)
+        .collect();
+
     let mut ran = 0;
-    for migration in &migrations {
+    for migration in migrations {
         let filename = migration.file_name().to_string_lossy().to_string();
-        
         if applied.contains(&filename) {
             continue;
         }
-        
+
         println!("  [*] Running: {}", filename.green());
-        
         let sql = fs::read_to_string(migration.path())?;
-        // Strip comment-only lines starting with "-- DOWN" onwards
         let up_sql: String = sql
             .lines()
             .take_while(|line| !line.trim().starts_with("-- DOWN"))
             .collect::<Vec<_>>()
             .join("\n");
-        
-        sqlx::query(&up_sql).execute(&pool).await?;
-        
-        // Record the migration
-        sqlx::query("INSERT INTO _yaiko_migrations (filename) VALUES ($1)")
+
+        if !up_sql.trim().is_empty() {
+            sqlx::query(&up_sql).execute(&pool).await?;
+        }
+
+        sqlx::query("INSERT INTO _yaiko_migrations (filename) VALUES (?)")
             .bind(&filename)
             .execute(&pool)
             .await?;
-        
+
         ran += 1;
     }
-    
+
     if ran == 0 {
         println!("[OK] All migrations already applied.");
     } else {
         println!("\n[OK] Applied {} migration(s).", ran);
     }
-    
+
+    Ok(())
+}
+
+async fn run_postgres(db_url: &str, migrations: &[fs::DirEntry]) -> anyhow::Result<()> {
+    let pool = PgPoolOptions::new()
+        .max_connections(1)
+        .connect(db_url)
+        .await?;
+
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS _yaiko_migrations (
+            id SERIAL PRIMARY KEY,
+            filename VARCHAR(255) NOT NULL UNIQUE,
+            executed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        )"
+    )
+    .execute(&pool)
+    .await?;
+
+    let applied: Vec<String> = sqlx::query_as::<_, (String,)>("SELECT filename FROM _yaiko_migrations ORDER BY filename")
+        .fetch_all(&pool)
+        .await?
+        .into_iter()
+        .map(|r| r.0)
+        .collect();
+
+    let mut ran = 0;
+    for migration in migrations {
+        let filename = migration.file_name().to_string_lossy().to_string();
+        if applied.contains(&filename) {
+            continue;
+        }
+
+        println!("  [*] Running: {}", filename.green());
+        let sql = fs::read_to_string(migration.path())?;
+        let up_sql: String = sql
+            .lines()
+            .take_while(|line| !line.trim().starts_with("-- DOWN"))
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        if !up_sql.trim().is_empty() {
+            sqlx::query(&up_sql).execute(&pool).await?;
+        }
+
+        sqlx::query("INSERT INTO _yaiko_migrations (filename) VALUES ($1)")
+            .bind(&filename)
+            .execute(&pool)
+            .await?;
+
+        ran += 1;
+    }
+
+    if ran == 0 {
+        println!("[OK] All migrations already applied.");
+    } else {
+        println!("\n[OK] Applied {} migration(s).", ran);
+    }
+
     Ok(())
 }
 
@@ -148,6 +213,7 @@ pub async fn rollback() -> anyhow::Result<()> {
 }
 
 pub async fn status() -> anyhow::Result<()> {
+    dotenvy::dotenv().ok();
     println!("[*] Migration status:");
     
     let migrations_dir = Path::new("migrations");

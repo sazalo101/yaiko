@@ -47,4 +47,5 @@ thiserror = "1.0"
 
 # Date/time
 chrono = "0.4"
-sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio-rustls", "chrono"] }
+dotenvy = "0.15"
+sqlx = { version = "0.8.6", features = ["postgres", "sqlite", "runtime-tokio-rustls", "chrono"] }
