@@ -1,11 +1,13 @@
 [package]
 name = "yaiko-core"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Yaiko Team"]
 description = "A modern, production-ready fullstack web framework for Rust"
 license = "MIT"
+readme = "README.md"
 repository = "https://github.com/sazalo101/yaiko"
+documentation = "https://docs.rs/yaiko-core"
 
 keywords = ["web", "framework", "async", "fullstack", "yaiko"]
 categories = ["web-programming::http-server"]

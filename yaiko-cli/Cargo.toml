@@ -1,11 +1,13 @@
 [package]
 name = "yaiko"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Yaiko Team"]
 description = "A modern, production-ready fullstack framework for Rust + jQuery"
 license = "MIT"
+readme = "README.md"
 repository = "https://github.com/sazalo101/yaiko"
+documentation = "https://github.com/sazalo101/yaiko#readme"
 
 keywords = ["web", "framework", "cli", "fullstack"]
 
