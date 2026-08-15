@@ -41,6 +41,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // Define Sidebar
     let sidebar = vec![
         SidebarItem { title: "Introduction".into(), url: "/".into(), active: false },
+        SidebarItem { title: "Yaiko for Beginners".into(), url: "/beginners-book".into(), active: false },
+        SidebarItem { title: "The Yaiko Book".into(), url: "/book".into(), active: false },
         SidebarItem { title: "Getting Started".into(), url: "/getting-started".into(), active: false },
         SidebarItem { title: "Tutorial".into(), url: "/tutorial".into(), active: false },
         SidebarItem { title: "Configuration".into(), url: "/configuration".into(), active: false },
@@ -52,6 +54,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         SidebarItem { title: "WebSockets".into(), url: "/websockets".into(), active: false },
         SidebarItem { title: "Background Jobs".into(), url: "/background-jobs".into(), active: false },
         SidebarItem { title: "File Uploads".into(), url: "/file-uploads".into(), active: false },
+        SidebarItem { title: "CLI Tool".into(), url: "/cli".into(), active: false },
     ];
     
     let state = Arc::new(AppState {
@@ -76,16 +79,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     
     let app = App::new().router(router);
     
-    let addr: SocketAddr = "127.0.0.1:3000".parse()?;
-    let server = Server::new(app, addr);
+    let port: u16 = std::env::var("PORT")
+        .ok()
+        .and_then(|p| p.parse().ok())
+        .unwrap_or(3001);
+        
+    let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let addr: SocketAddr = format!("{}:{}", host, port).parse()?;
     
     tracing::info!("Docs server running at http://{}", addr);
-    server.run().await?;
+    Server::new(app, addr).run().await?;
     
     Ok(())
 }
 
-async fn render_page(req: Request, state: Arc<AppState>, page_name: String) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
+async fn render_page(_req: Request, state: Arc<AppState>, page_name: String) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
     let file_path = format!("./content/{}.md", page_name);
     let path = Path::new(&file_path);
     
