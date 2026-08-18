@@ -64,6 +64,7 @@ pub mod middleware;
 pub mod migrations;
 pub mod notifications;
 pub mod rate_limit;
+pub mod rbac;
 pub mod request;
 pub mod resilience;
 pub mod response;
@@ -238,6 +239,7 @@ pub use openapi::{OpenApiDocument, OpenApiHandler, OpenApiOperation, OpenApiResp
 pub use pagination::{CursorCodec, Page, PageRequest, PaginationError};
 pub use privacy::{PrivacyPolicy, SecretString};
 pub use rate_limit::{MemoryRateLimiter, QuotaPolicy, RateLimitDecision};
+pub use rbac::{RbacError, RbacPolicy, Role};
 pub use request::Request;
 pub use resilience::{Bulkhead, BulkheadPermit, CircuitBreaker, CircuitState, ResilienceError};
 pub use response::Response;
