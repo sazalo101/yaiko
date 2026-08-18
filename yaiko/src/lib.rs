@@ -21,6 +21,7 @@ pub mod encryption;
 pub mod file_upload;
 pub mod handler;
 pub mod media_delivery;
+pub mod media_metadata;
 pub mod media_output;
 pub mod media_processing;
 pub mod media_task;
@@ -120,6 +121,9 @@ pub use feature_flags::{FeatureChange, FeatureFlagStore, FeatureSnapshot, Featur
 pub use fixtures::{CleanupGuard, FixtureFactory};
 pub use handler::Handler;
 pub use media_delivery::{ByteRange, MediaAsset, MediaDelivery, MediaResponse, RangeError};
+pub use media_metadata::{
+    parse_and_validate, MediaMetadata, MediaMetadataError, MediaMetadataRequirements,
+};
 pub use media_output::{MediaOutputError, MediaOutputValidator, ValidatedMediaOutput};
 pub use media_processing::{CaptionTrack, FfmpegJobSpec, MediaError, MediaPath, MusicTrack};
 pub use media_task::{MediaTask, MediaTaskError};
