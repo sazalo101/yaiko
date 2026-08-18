@@ -64,6 +64,7 @@ pub mod http_client;
 pub mod i18n;
 pub mod idempotency;
 pub mod jobs;
+pub mod media_waveform;
 pub mod schema_validation;
 pub mod search;
 pub mod security;
@@ -193,6 +194,7 @@ pub use file_upload::{parse_multipart, FileUpload};
 pub use compression::CompressionMiddleware;
 
 // WebSocket exports
+pub use media_waveform::{Chapter, ChapterTrack, Waveform, WaveformError};
 pub use versioning::{ApiVersion, VersionDecision, VersionError, VersionNegotiator};
 pub use webhook::{PreparedWebhook, WebhookError, WebhookEvent, WebhookVerifier};
 pub use websocket::{is_websocket_upgrade, WebSocketConnection, WebSocketManager};
