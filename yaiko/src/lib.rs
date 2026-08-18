@@ -92,6 +92,7 @@ pub mod url;
 // Production modules
 pub mod config;
 pub mod error;
+pub mod event_bus;
 pub mod extract;
 pub mod feature_flags;
 pub mod feed;
@@ -171,6 +172,7 @@ pub use distributed_rate_limit::{
 };
 pub use encryption::{EncryptedEnvelope, EncryptionError, KeyRing};
 pub use error::{AppError, AppResult, ErrorCode, ErrorDetails, ErrorDocument};
+pub use event_bus::{Event, EventBus, EventBusError, Subscription};
 pub use extract::{Form, FromRequest, Json, Path, Query};
 pub use feature_flags::{FeatureChange, FeatureFlagStore, FeatureSnapshot, FeatureValue};
 pub use feed::{FeedError, FeedItem, RssFeed};
