@@ -18,6 +18,7 @@ pub mod handler;
 pub mod media_delivery;
 #[cfg(feature = "metrics")]
 pub mod metrics;
+pub mod metrics_registry;
 pub mod middleware;
 pub mod migrations;
 pub mod notifications;
@@ -96,6 +97,9 @@ pub use feature_flags::{FeatureChange, FeatureFlagStore, FeatureSnapshot, Featur
 pub use fixtures::{CleanupGuard, FixtureFactory};
 pub use handler::Handler;
 pub use media_delivery::{ByteRange, MediaAsset, MediaDelivery, MediaResponse, RangeError};
+pub use metrics_registry::{
+    MetricError, MetricKind, MetricValue, MetricsRegistry, MetricsSnapshot,
+};
 pub use middleware::Middleware;
 pub use migrations::{AppliedMigration, Migration, MigrationError, MigrationPlan, MigrationRunner};
 pub use notifications::{
