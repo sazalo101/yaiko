@@ -46,6 +46,7 @@ pub mod media_retention;
 pub mod media_retry;
 pub mod media_revision;
 pub mod media_scenes;
+pub mod media_selection_lock;
 pub mod media_snapshot;
 pub mod media_task;
 pub mod media_timeline;
@@ -189,6 +190,9 @@ pub use media_retention::{
 pub use media_retry::{MediaFailure, MediaRetryPolicy, RetryDecision, RetryError};
 pub use media_revision::{MediaRevisionStore, RevisionDiff, RevisionError, RevisionRecord};
 pub use media_scenes::{validate_scenes, SceneBoundary, SceneError, SceneMarker};
+pub use media_selection_lock::{
+    MediaSelectionLockStore, SelectionLock, SelectionLockError, SelectionLockSnapshot,
+};
 pub use media_snapshot::{
     serialize_project_snapshot, MediaProjectSnapshot, SerializedProjectSnapshot, SnapshotAsset,
     SnapshotError,
