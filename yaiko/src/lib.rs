@@ -35,6 +35,7 @@ pub mod response;
 pub mod router;
 pub mod server;
 pub mod session;
+pub mod singleflight_cache;
 pub mod static_files;
 pub mod storage;
 pub mod task_observability;
@@ -140,6 +141,7 @@ pub use schema_validation::{FieldError, SchemaRule, SchemaValidator, ValidationR
 pub use search::{Filter, FilterOperator, QueryBuilder, QueryError, QuerySpec, SortField};
 pub use server::Server;
 pub use session::{MemorySessionStore, Session, SessionHandle, SessionMiddleware, SessionStore};
+pub use singleflight_cache::{CacheError, CacheLookup, SingleFlightCache};
 pub use static_files::StaticFiles;
 pub use storage::{LocalStorage, Storage, StorageResult};
 pub use upload_policy::{
