@@ -25,6 +25,7 @@ pub mod health;
 pub mod jobs;
 pub mod security;
 pub mod seo;
+pub mod webhook;
 pub mod websocket;
 
 // Validation module
@@ -81,6 +82,7 @@ pub use file_upload::{parse_multipart, FileUpload};
 pub use compression::CompressionMiddleware;
 
 // WebSocket exports
+pub use webhook::{PreparedWebhook, WebhookError, WebhookEvent, WebhookVerifier};
 pub use websocket::{is_websocket_upgrade, WebSocketConnection, WebSocketManager};
 
 // Background jobs exports
