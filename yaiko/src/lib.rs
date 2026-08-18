@@ -6,6 +6,7 @@ pub mod compression;
 pub mod database;
 pub mod file_upload;
 pub mod handler;
+pub mod media_delivery;
 #[cfg(feature = "metrics")]
 pub mod metrics;
 pub mod middleware;
@@ -59,6 +60,7 @@ pub use error::{AppError, AppResult, ErrorCode, ErrorDetails, ErrorDocument};
 pub use extract::{Form, FromRequest, Json, Path, Query};
 pub use feature_flags::{FeatureChange, FeatureFlagStore, FeatureSnapshot, FeatureValue};
 pub use handler::Handler;
+pub use media_delivery::{ByteRange, MediaAsset, MediaDelivery, MediaResponse, RangeError};
 pub use middleware::Middleware;
 pub use migrations::{AppliedMigration, Migration, MigrationError, MigrationPlan, MigrationRunner};
 pub use oauth::{
