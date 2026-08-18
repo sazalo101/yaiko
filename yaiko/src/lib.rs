@@ -4,6 +4,7 @@ pub mod audit;
 pub mod auth;
 pub mod cache;
 pub mod compression;
+pub mod compression_policy;
 pub mod cors;
 pub mod csp;
 pub mod database;
@@ -62,6 +63,7 @@ pub use api_keys::{
 pub use app::App;
 pub use audit::{AuditEvent, AuditEventBuilder, AuditQuery, MemoryAuditSink};
 pub use cache::{Cache, CacheNamespace, CacheResult, CacheStore, MemoryCache};
+pub use compression_policy::{CompressionDecision, CompressionEncoding, CompressionPolicy};
 pub use config::Settings;
 pub use cors::{CorsDecision, CorsDenial, CorsPolicy, OriginRule};
 pub use csp::{ContentSecurityPolicy, CspNonce, SecurityPolicyHeaders};
