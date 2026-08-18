@@ -22,6 +22,7 @@ pub mod config;
 pub mod error;
 pub mod extract;
 pub mod health;
+pub mod idempotency;
 pub mod jobs;
 pub mod security;
 pub mod seo;
@@ -86,6 +87,10 @@ pub use webhook::{PreparedWebhook, WebhookError, WebhookEvent, WebhookVerifier};
 pub use websocket::{is_websocket_upgrade, WebSocketConnection, WebSocketManager};
 
 // Background jobs exports
+pub use idempotency::{
+    fingerprint, ClaimOutcome, IdempotencyError, IdempotencyLease, MemoryIdempotencyStore,
+    StoredResponse,
+};
 pub use jobs::{DeadLetter, Job, JobQueue};
 
 // Health check exports
