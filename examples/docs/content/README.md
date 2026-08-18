@@ -41,3 +41,6 @@ cd my-app && yaiko dev
 - [AI Chat](../../chat) — Claude-like chat with OpenRouter API
 - [Built-in module catalog](built-in-modules.md) — Current catalog and code examples
 - [ImgHost](../../imghost) — Upload, storage, and media-delivery example
+- [Built-in Catalog](../../catalog) — Router, health, metadata, and structured JSON
+- [Media Studio](../../media-studio) — Persistent SQLite media-editor repository
+- [Webhook Inbox](../../webhook-inbox) — Signed event verification and replay protection

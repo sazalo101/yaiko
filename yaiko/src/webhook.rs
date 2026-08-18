@@ -113,12 +113,17 @@ impl WebhookVerifier {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum WebhookError {
+    #[error("malformed webhook signature")]
     MalformedSignature,
+    #[error("webhook signature expired")]
     Expired,
+    #[error("invalid webhook secret")]
     InvalidSecret,
+    #[error("invalid webhook signature")]
     InvalidSignature,
+    #[error("webhook signature replay detected")]
     Replay,
 }
 

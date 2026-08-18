@@ -70,10 +70,13 @@ cargo install --path yaiko-cli --force
 - **`examples/file-request-links`**: Secure file request and sharing application
 - **`examples/docs`**: Documentation site with the beginner guide, full book, and built-in module catalog
 - **`examples/blog`**: Static blog demonstrating routing, SEO endpoints, static assets, logging, security headers, and JSON APIs
+- **`examples/catalog`**: HTTP catalog demonstrating Router, HealthCheck, Head, Metadata, and structured JSON
+- **`examples/media-studio`**: SQLite-backed media project demonstrating persistent editor revisions, assets, and timelines
+- **`examples/webhook-inbox`**: Signed webhook event verification with timestamp validation and replay protection
 
 ## Built-in Module Status
 
-The current branch contains verified built-ins for routing, frontend primitives, data ergonomics, security, API/RPC, background and realtime workflows, developer tooling, observability, deployment planning, utilities, and media editing. These modules are reusable policy/domain facades; persistent repositories, HTTP/WebSocket application handlers, controlled FFmpeg workers, and the browser video-editor UI remain the next integration layer.
+The current branch contains verified built-ins for routing, frontend primitives, data ergonomics, security, API/RPC, background and realtime workflows, developer tooling, observability, deployment planning, utilities, and media editing. These modules are reusable policy/domain facades; persistent media-editor repositories are now available behind `persistent-media`, while HTTP/WebSocket application handlers, controlled FFmpeg workers, artifact delivery, and the browser video-editor UI remain the next integration layer.
 
 Recent verified deployments include:
 

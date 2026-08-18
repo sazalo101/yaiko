@@ -7,11 +7,14 @@
 use crate::media_editor::{EditorError, EditorSnapshot};
 use sqlx::{Row, SqlitePool};
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum MediaEditorRepositoryError {
-    Database(sqlx::Error),
+    #[error("database operation failed: {0}")]
+    Database(#[source] sqlx::Error),
+    #[error("media editor state rejected: {0:?}")]
     Editor(EditorError),
-    CorruptAssets(serde_json::Error),
+    #[error("stored asset list is invalid: {0}")]
+    CorruptAssets(#[source] serde_json::Error),
 }
 
 impl From<sqlx::Error> for MediaEditorRepositoryError {
