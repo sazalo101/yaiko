@@ -138,6 +138,7 @@ pub mod versioning;
 // Developer experience modules
 pub mod lifecycle;
 pub mod link;
+pub mod lint_policy;
 pub mod log_facade;
 pub mod logging;
 pub mod oauth;
@@ -321,6 +322,7 @@ pub use body_stream::{read_bounded, BodyCancellation, BodyReadReport, BodyStream
 // Logging exports
 pub use lifecycle::{LifecycleError, ServiceRegistry, ServiceState, ShutdownReport, ShutdownToken};
 pub use link::{Link, LinkError, NavigationMode, Prefetch};
+pub use lint_policy::{LintDiagnostic, LintError, LintPolicy, LintSeverity};
 pub use log_facade::{LogError, LogFacade, LogLevel, LogRecord};
 pub use logging::{init_tracing, LoggingMiddleware};
 
