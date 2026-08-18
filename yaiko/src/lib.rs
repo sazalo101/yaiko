@@ -43,6 +43,7 @@ pub mod fixtures;
 pub mod health;
 pub mod health_registry;
 pub mod http_client;
+pub mod i18n;
 pub mod idempotency;
 pub mod jobs;
 pub mod schema_validation;
@@ -162,6 +163,7 @@ pub use health_registry::{
 pub use http_client::{
     HttpClientError, HttpRequestSpec, HttpResponse, HttpRetryPolicy, OutboundHttpClient,
 };
+pub use i18n::{Catalog, I18nError, Locale, Translator};
 
 // Re-export commonly used types
 pub use async_trait::async_trait;
