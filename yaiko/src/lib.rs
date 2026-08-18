@@ -56,6 +56,7 @@ pub mod seo;
 pub mod webhook;
 pub mod websocket;
 pub mod ws_channels;
+pub mod ws_protocol;
 
 // Validation module
 pub mod validation;
@@ -159,6 +160,7 @@ pub use versioning::{ApiVersion, VersionDecision, VersionError, VersionNegotiato
 pub use webhook::{PreparedWebhook, WebhookError, WebhookEvent, WebhookVerifier};
 pub use websocket::{is_websocket_upgrade, WebSocketConnection, WebSocketManager};
 pub use ws_channels::{ChannelError, ChannelMessage, ChannelRegistry, CloseReason, HeartbeatState};
+pub use ws_protocol::{WsEnvelope, WsProtocol, WsProtocolError};
 
 // Background jobs exports
 pub use idempotency::{
