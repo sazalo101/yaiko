@@ -97,6 +97,7 @@ pub mod feed;
 pub mod fixtures;
 pub mod font;
 pub mod form;
+pub mod fs_router;
 pub mod head;
 pub mod health;
 pub mod health_registry;
@@ -174,6 +175,7 @@ pub use feed::{FeedError, FeedItem, RssFeed};
 pub use fixtures::{CleanupGuard, FixtureFactory};
 pub use font::{Font, FontError, FontSource, FontStyle};
 pub use form::FormSchema;
+pub use fs_router::{FsMatch, FsRouteError, FsRouter};
 pub use handler::Handler;
 pub use media_access::{MediaAccessClaims, MediaAccessError, MediaAccessTokens};
 pub use media_annotations::{
