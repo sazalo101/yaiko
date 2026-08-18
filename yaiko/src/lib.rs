@@ -48,6 +48,7 @@ pub mod media_project_templates;
 pub mod media_quota;
 pub mod media_retention;
 pub mod media_retry;
+pub mod media_review;
 pub mod media_revision;
 pub mod media_scenes;
 pub mod media_selection_lock;
@@ -204,6 +205,7 @@ pub use media_retention::{
     CleanupReport, MediaArtifact, MediaRetention, RetentionError, RetentionPolicy,
 };
 pub use media_retry::{MediaFailure, MediaRetryPolicy, RetryDecision, RetryError};
+pub use media_review::{MediaReviewStore, ReviewError, ReviewRequest, ReviewSnapshot, ReviewState};
 pub use media_revision::{MediaRevisionStore, RevisionDiff, RevisionError, RevisionRecord};
 pub use media_scenes::{validate_scenes, SceneBoundary, SceneError, SceneMarker};
 pub use media_selection_lock::{
