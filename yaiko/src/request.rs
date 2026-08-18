@@ -35,6 +35,7 @@ impl Request {
     ) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let (parts, body) = req.into_parts();
         let query = Self::parse_query(&parts.uri);
+        let request_id = Self::resolve_request_id(&parts.headers);
 
         Ok(Request {
             method: parts.method,
@@ -45,7 +46,7 @@ impl Request {
             query,
             json_body: None,
             form_data_cache: None,
-            request_id: uuid::Uuid::new_v4().to_string(),
+            request_id,
             user_id: None,
             user_roles: Vec::new(),
             session: None,
@@ -94,6 +95,25 @@ impl Request {
             }
         }
         Ok(self.form_data_cache.clone().unwrap_or_default())
+    }
+
+    /// Return the correlation ID assigned to this request.
+    pub fn request_id(&self) -> &str {
+        &self.request_id
+    }
+
+    /// Header name used for request correlation.
+    pub const fn request_id_header() -> &'static str {
+        "X-Request-ID"
+    }
+
+    fn resolve_request_id(headers: &hyper::HeaderMap) -> String {
+        headers
+            .get(Self::request_id_header())
+            .and_then(|value| value.to_str().ok())
+            .filter(|value| !value.is_empty() && value.len() <= 128)
+            .map(ToOwned::to_owned)
+            .unwrap_or_else(|| uuid::Uuid::new_v4().to_string())
     }
 
     pub fn param(&self, key: &str) -> Option<&String> {

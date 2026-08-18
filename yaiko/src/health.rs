@@ -45,6 +45,11 @@ impl DetailedHealthCheck {
         Self { checks: Vec::new() }
     }
 
+    /// Return whether every registered dependency check currently passes.
+    pub fn is_ready(&self) -> bool {
+        self.checks.iter().all(|(_, check)| check())
+    }
+
     /// Add a health check
     pub fn add_check<F>(mut self, name: &'static str, check: F) -> Self
     where
@@ -102,3 +107,9 @@ impl Handler for DetailedHealthCheck {
             .text(&body))
     }
 }
+
+/// Liveness is a process-level check with no dependency probes.
+pub type LivenessCheck = HealthCheck;
+
+/// Readiness is a dependency-aware detailed health check.
+pub type ReadinessCheck = DetailedHealthCheck;

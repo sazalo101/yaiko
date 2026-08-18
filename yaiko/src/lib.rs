@@ -14,11 +14,13 @@ pub mod router;
 pub mod server;
 pub mod session;
 pub mod static_files;
+pub mod storage;
 pub mod template;
 
 // Production modules
 pub mod config;
 pub mod error;
+pub mod extract;
 pub mod health;
 pub mod jobs;
 pub mod security;
@@ -37,9 +39,11 @@ pub mod testing;
 pub mod dev;
 
 pub use app::App;
+pub use cache::{Cache, CacheResult, CacheStore, MemoryCache};
 pub use config::Settings;
 pub use database::Database;
 pub use error::{AppError, AppResult, ErrorCode, ErrorDetails, ErrorDocument};
+pub use extract::{Form, FromRequest, Json, Path, Query};
 pub use handler::Handler;
 pub use middleware::Middleware;
 pub use request::Request;
@@ -48,6 +52,7 @@ pub use router::{Route, Router};
 pub use server::Server;
 pub use session::{MemorySessionStore, Session, SessionHandle, SessionMiddleware, SessionStore};
 pub use static_files::StaticFiles;
+pub use storage::{LocalStorage, Storage, StorageResult};
 
 // Security exports
 pub use security::{CsrfProtection, RateLimiter, SecurityHeaders};
@@ -73,10 +78,10 @@ pub use compression::CompressionMiddleware;
 pub use websocket::{is_websocket_upgrade, WebSocketConnection, WebSocketManager};
 
 // Background jobs exports
-pub use jobs::{Job, JobQueue};
+pub use jobs::{DeadLetter, Job, JobQueue};
 
 // Health check exports
-pub use health::{DetailedHealthCheck, HealthCheck};
+pub use health::{DetailedHealthCheck, HealthCheck, LivenessCheck, ReadinessCheck};
 
 // Re-export commonly used types
 pub use async_trait::async_trait;

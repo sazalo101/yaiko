@@ -68,7 +68,47 @@ impl Database {
         Ok(Database::Sqlite(Arc::new(pool)))
     }
 
-    /// Execute a raw SQL query and return affected rows
+    /// Check whether the selected database pool is reachable.
+    #[cfg(feature = "postgres")]
+    pub async fn ping_pg(&self) -> Result<(), sqlx::Error> {
+        match self {
+            Database::Postgres(pool) => sqlx::query("SELECT 1").execute(&**pool).await.map(|_| ()),
+            #[allow(unreachable_patterns)]
+            _ => Err(sqlx::Error::Configuration("Wrong database type".into())),
+        }
+    }
+
+    /// Check whether the selected database pool is reachable.
+    #[cfg(feature = "sqlite")]
+    pub async fn ping_sqlite(&self) -> Result<(), sqlx::Error> {
+        match self {
+            Database::Sqlite(pool) => sqlx::query("SELECT 1").execute(&**pool).await.map(|_| ()),
+            #[allow(unreachable_patterns)]
+            _ => Err(sqlx::Error::Configuration("Wrong database type".into())),
+        }
+    }
+
+    /// Begin a PostgreSQL transaction for explicit commit/rollback control.
+    #[cfg(feature = "postgres")]
+    pub async fn begin_pg(&self) -> Result<sqlx::Transaction<'_, Postgres>, sqlx::Error> {
+        match self {
+            Database::Postgres(pool) => pool.begin().await,
+            #[allow(unreachable_patterns)]
+            _ => Err(sqlx::Error::Configuration("Wrong database type".into())),
+        }
+    }
+
+    /// Begin a SQLite transaction for explicit commit/rollback control.
+    #[cfg(feature = "sqlite")]
+    pub async fn begin_sqlite(&self) -> Result<sqlx::Transaction<'_, Sqlite>, sqlx::Error> {
+        match self {
+            Database::Sqlite(pool) => pool.begin().await,
+            #[allow(unreachable_patterns)]
+            _ => Err(sqlx::Error::Configuration("Wrong database type".into())),
+        }
+    }
+
+    /// Execute a raw SQL query and return affected rows.
     #[cfg(feature = "postgres")]
     pub async fn execute_pg(&self, query: &str) -> Result<u64, sqlx::Error> {
         match self {
