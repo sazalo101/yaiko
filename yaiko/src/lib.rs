@@ -3,6 +3,7 @@ pub mod app;
 pub mod audit;
 pub mod auth;
 pub mod cache;
+pub mod coalescing;
 pub mod compression;
 pub mod compression_policy;
 pub mod cookie_policy;
@@ -73,6 +74,7 @@ pub use api_keys::{
 pub use app::App;
 pub use audit::{AuditEvent, AuditEventBuilder, AuditQuery, MemoryAuditSink};
 pub use cache::{Cache, CacheNamespace, CacheResult, CacheStore, MemoryCache};
+pub use coalescing::{stale_window, CachedValue, CoalesceError, FlightOwner, RequestCoalescer};
 pub use compression_policy::{CompressionDecision, CompressionEncoding, CompressionPolicy};
 pub use config::Settings;
 pub use cookie_policy::{CookieError, CookiePolicy, SignedCookieCodec};
