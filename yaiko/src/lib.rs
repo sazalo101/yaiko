@@ -40,6 +40,7 @@ pub mod media_retention;
 pub mod media_retry;
 pub mod media_task;
 pub mod media_timeline;
+pub mod media_timestamps;
 #[cfg(feature = "metrics")]
 pub mod metrics;
 pub mod metrics_registry;
@@ -163,6 +164,9 @@ pub use media_retention::{
 pub use media_retry::{MediaFailure, MediaRetryPolicy, RetryDecision, RetryError};
 pub use media_task::{MediaTask, MediaTaskError};
 pub use media_timeline::{CaptionOverlay, TimelineClip, TimelineError, TimelineSpec, Transition};
+pub use media_timestamps::{
+    validate_and_normalize, TimestampError, TimestampPolicy, TimestampReport,
+};
 pub use metrics_registry::{
     MetricError, MetricKind, MetricValue, MetricsRegistry, MetricsSnapshot,
 };
