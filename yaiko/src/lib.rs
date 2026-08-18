@@ -52,6 +52,7 @@ pub mod oauth;
 pub mod openapi;
 pub mod privacy;
 pub mod testing;
+pub mod tracing_context;
 
 // Optional dev module for development utilities
 #[cfg(feature = "dev")]
@@ -107,6 +108,7 @@ pub use logging::{init_tracing, LoggingMiddleware};
 // Testing exports
 pub use tenant::{TenantContext, TenantError, TenantId, TenantQuota, TenantResolver};
 pub use testing::{TestClient, TestResponse};
+pub use tracing_context::{Sampler, Span, SpanEvent, TraceContext};
 
 // File upload exports
 pub use file_upload::{parse_multipart, FileUpload};
