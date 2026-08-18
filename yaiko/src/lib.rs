@@ -100,6 +100,7 @@ pub mod health_registry;
 pub mod http_client;
 pub mod i18n;
 pub mod idempotency;
+pub mod image;
 pub mod jobs;
 pub mod media_waveform;
 pub mod media_webhook;
@@ -328,6 +329,7 @@ pub use http_client::{
     HttpClientError, HttpRequestSpec, HttpResponse, HttpRetryPolicy, OutboundHttpClient,
 };
 pub use i18n::{Catalog, I18nError, Locale, Translator};
+pub use image::{Image, ImageError, ImageFormat, Loading};
 
 // Re-export commonly used types
 pub use async_trait::async_trait;
