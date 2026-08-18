@@ -23,6 +23,7 @@ pub mod handler;
 pub mod media_delivery;
 pub mod media_metadata;
 pub mod media_output;
+pub mod media_preview;
 pub mod media_processing;
 pub mod media_task;
 #[cfg(feature = "metrics")]
@@ -125,6 +126,7 @@ pub use media_metadata::{
     parse_and_validate, MediaMetadata, MediaMetadataError, MediaMetadataRequirements,
 };
 pub use media_output::{MediaOutputError, MediaOutputValidator, ValidatedMediaOutput};
+pub use media_preview::{PreviewError, PreviewFormat, ThumbnailSpec};
 pub use media_processing::{CaptionTrack, FfmpegJobSpec, MediaError, MediaPath, MusicTrack};
 pub use media_task::{MediaTask, MediaTaskError};
 pub use metrics_registry::{
