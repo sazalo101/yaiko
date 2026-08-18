@@ -75,6 +75,7 @@ pub mod i18n;
 pub mod idempotency;
 pub mod jobs;
 pub mod media_waveform;
+pub mod media_webhook;
 pub mod schema_validation;
 pub mod search;
 pub mod security;
@@ -217,6 +218,7 @@ pub use compression::CompressionMiddleware;
 
 // WebSocket exports
 pub use media_waveform::{Chapter, ChapterTrack, Waveform, WaveformError};
+pub use media_webhook::{MediaEventKind, MediaWebhookError, MediaWebhookEvent, MediaWebhookSigner};
 pub use versioning::{ApiVersion, VersionDecision, VersionError, VersionNegotiator};
 pub use webhook::{PreparedWebhook, WebhookError, WebhookEvent, WebhookVerifier};
 pub use websocket::{is_websocket_upgrade, WebSocketConnection, WebSocketManager};
