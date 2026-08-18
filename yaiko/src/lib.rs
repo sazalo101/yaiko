@@ -22,6 +22,7 @@ pub mod encryption;
 pub mod file_upload;
 pub mod handler;
 pub mod media_access;
+pub mod media_cache_key;
 pub mod media_delivery;
 pub mod media_delivery_policy;
 pub mod media_export;
@@ -138,6 +139,7 @@ pub use feature_flags::{FeatureChange, FeatureFlagStore, FeatureSnapshot, Featur
 pub use fixtures::{CleanupGuard, FixtureFactory};
 pub use handler::Handler;
 pub use media_access::{MediaAccessClaims, MediaAccessError, MediaAccessTokens};
+pub use media_cache_key::{CacheKeyError, ThumbnailCacheKey};
 pub use media_delivery::{ByteRange, MediaAsset, MediaDelivery, MediaResponse, RangeError};
 pub use media_delivery_policy::{DeliveryHeaders, DeliveryPolicyError, MediaDeliveryPolicy};
 pub use media_export::{AudioCodec, Container, ExportError, ExportProfile, VideoCodec};
