@@ -39,6 +39,7 @@ pub mod media_limits;
 pub mod media_loudness;
 pub mod media_manifest;
 pub mod media_metadata;
+pub mod media_notification_preferences;
 pub mod media_output;
 pub mod media_presence;
 pub mod media_preview;
@@ -189,6 +190,10 @@ pub use media_loudness::{ChannelLayout, LoudnessError, LoudnessMetadata, Loudnes
 pub use media_manifest::{ManifestError, MediaManifest, MediaManifestStore};
 pub use media_metadata::{
     parse_and_validate, MediaMetadata, MediaMetadataError, MediaMetadataRequirements,
+};
+pub use media_notification_preferences::{
+    DigestMode, MediaNotificationPreference, MediaNotificationPreferenceStore, NotificationChannel,
+    NotificationPreferenceError,
 };
 pub use media_output::{MediaOutputError, MediaOutputValidator, ValidatedMediaOutput};
 pub use media_presence::{
