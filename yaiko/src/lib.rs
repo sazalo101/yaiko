@@ -27,6 +27,7 @@ pub mod error;
 pub mod extract;
 pub mod feature_flags;
 pub mod health;
+pub mod health_registry;
 pub mod idempotency;
 pub mod jobs;
 pub mod security;
@@ -109,6 +110,9 @@ pub use jobs::{DeadLetter, Job, JobQueue};
 
 // Health check exports
 pub use health::{DetailedHealthCheck, HealthCheck, LivenessCheck, ReadinessCheck};
+pub use health_registry::{
+    DependencyHealthHandler, DependencyHealthRegistry, HealthReport, ProbeResult,
+};
 
 // Re-export commonly used types
 pub use async_trait::async_trait;
