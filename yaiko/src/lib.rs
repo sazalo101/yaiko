@@ -108,6 +108,7 @@ pub mod head;
 pub mod health;
 pub mod health_facade;
 pub mod health_registry;
+pub mod hmr;
 pub mod http_client;
 pub mod i18n;
 pub mod icon;
@@ -369,9 +370,8 @@ pub use health_facade::{
 pub use health_registry::{
     DependencyHealthHandler, DependencyHealthRegistry, HealthReport, ProbeResult,
 };
-pub use http_client::{
-    HttpClientError, HttpRequestSpec, HttpResponse, HttpRetryPolicy, OutboundHttpClient,
-};
+pub use hmr::{HmrAsset, HmrError, HmrEvent, HmrPolicy, ReloadMode};
+pub use http_client::{HttpRequestSpec, HttpResponse, HttpRetryPolicy, OutboundHttpClient};
 pub use i18n::{Catalog, I18nError, Locale, Translator};
 pub use icon::{Icon, IconError};
 pub use image::{Image, ImageError, ImageFormat, Loading};
