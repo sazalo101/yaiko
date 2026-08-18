@@ -28,6 +28,7 @@ pub mod media_delivery;
 pub mod media_delivery_policy;
 pub mod media_export;
 pub mod media_graph;
+pub mod media_limits;
 pub mod media_manifest;
 pub mod media_metadata;
 pub mod media_output;
@@ -146,6 +147,7 @@ pub use media_delivery::{ByteRange, MediaAsset, MediaDelivery, MediaResponse, Ra
 pub use media_delivery_policy::{DeliveryHeaders, DeliveryPolicyError, MediaDeliveryPolicy};
 pub use media_export::{AudioCodec, Container, ExportError, ExportProfile, VideoCodec};
 pub use media_graph::{MediaGraph, MediaGraphError, MediaNode, NodeState};
+pub use media_limits::{MediaFacts, MediaLimits, MediaLimitsError};
 pub use media_manifest::{ManifestError, MediaManifest, MediaManifestStore};
 pub use media_metadata::{
     parse_and_validate, MediaMetadata, MediaMetadataError, MediaMetadataRequirements,
