@@ -100,6 +100,7 @@ pub mod health;
 pub mod health_registry;
 pub mod http_client;
 pub mod i18n;
+pub mod icon;
 pub mod idempotency;
 pub mod image;
 pub mod jobs;
@@ -331,6 +332,7 @@ pub use http_client::{
     HttpClientError, HttpRequestSpec, HttpResponse, HttpRetryPolicy, OutboundHttpClient,
 };
 pub use i18n::{Catalog, I18nError, Locale, Translator};
+pub use icon::{Icon, IconError};
 pub use image::{Image, ImageError, ImageFormat, Loading};
 
 // Re-export commonly used types
