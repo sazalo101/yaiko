@@ -57,6 +57,7 @@ pub mod media_snapshot;
 pub mod media_task;
 pub mod media_timeline;
 pub mod media_timestamps;
+pub mod metadata;
 #[cfg(feature = "metrics")]
 pub mod metrics;
 pub mod metrics_registry;
@@ -229,6 +230,7 @@ pub use media_timeline::{CaptionOverlay, TimelineClip, TimelineError, TimelineSp
 pub use media_timestamps::{
     validate_and_normalize, TimestampError, TimestampPolicy, TimestampReport,
 };
+pub use metadata::{Metadata, MetadataError};
 pub use metrics_registry::{
     MetricError, MetricKind, MetricValue, MetricsRegistry, MetricsSnapshot,
 };
