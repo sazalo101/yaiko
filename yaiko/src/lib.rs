@@ -138,6 +138,7 @@ pub mod logging;
 pub mod oauth;
 pub mod openapi;
 pub mod pagination;
+pub mod pool;
 pub mod privacy;
 pub mod proxy;
 pub mod pubsub;
@@ -270,6 +271,7 @@ pub use oauth::{
 };
 pub use openapi::{OpenApiDocument, OpenApiHandler, OpenApiOperation, OpenApiResponse};
 pub use pagination::{CursorCodec, Page, PageRequest, PaginationError};
+pub use pool::{PoolError, PoolPolicy};
 pub use privacy::{PrivacyPolicy, SecretString};
 pub use proxy::{ProxyError, ProxyMethod, ProxyPolicy, ProxyRequest};
 pub use pubsub::{PubSub, PubSubError, PubSubMessage, PubSubSubscription};
