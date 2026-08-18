@@ -75,6 +75,7 @@ pub mod router;
 pub mod server;
 pub mod session;
 pub mod singleflight_cache;
+pub mod static_asset;
 pub mod static_files;
 pub mod storage;
 pub mod style;
@@ -267,6 +268,7 @@ pub use search::{Filter, FilterOperator, QueryBuilder, QueryError, QuerySpec, So
 pub use server::Server;
 pub use session::{MemorySessionStore, Session, SessionHandle, SessionMiddleware, SessionStore};
 pub use singleflight_cache::{CacheError, CacheLookup, SingleFlightCache};
+pub use static_asset::{CachePolicy, StaticAsset, StaticAssetError};
 pub use static_files::StaticFiles;
 pub use storage::{LocalStorage, Storage, StorageResult};
 pub use style::{StyleError, StyleSheet};
