@@ -31,6 +31,7 @@ pub mod server;
 pub mod session;
 pub mod static_files;
 pub mod storage;
+pub mod task_observability;
 pub mod task_scheduler;
 pub mod template;
 pub mod tenant;
@@ -140,6 +141,7 @@ pub use lifecycle::{LifecycleError, ServiceRegistry, ServiceState, ShutdownRepor
 pub use logging::{init_tracing, LoggingMiddleware};
 
 // Testing exports
+pub use task_observability::{TaskObservation, TaskObserver, TaskOutcome};
 pub use task_scheduler::{ScheduleError, ScheduledTask, ScheduledTaskState, TaskScheduler};
 pub use tenant::{TenantContext, TenantError, TenantId, TenantQuota, TenantResolver};
 pub use testing::{TestClient, TestResponse};
