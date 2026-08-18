@@ -89,6 +89,7 @@ pub mod task_results;
 pub mod task_scheduler;
 pub mod template;
 pub mod tenant;
+pub mod transaction;
 pub mod upload_policy;
 pub mod url;
 
@@ -321,6 +322,7 @@ pub use task_scheduler::{ScheduleError, ScheduledTask, ScheduledTaskState, TaskS
 pub use tenant::{TenantContext, TenantError, TenantId, TenantQuota, TenantResolver};
 pub use testing::{TestClient, TestResponse};
 pub use tracing_context::{Sampler, Span, SpanEvent, TraceContext};
+pub use transaction::{Transaction, TransactionError, TransactionState};
 
 // File upload exports
 pub use file_upload::{parse_multipart, FileUpload};
