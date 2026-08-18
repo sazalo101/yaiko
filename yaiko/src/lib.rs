@@ -31,6 +31,7 @@ pub mod media_metadata;
 pub mod media_output;
 pub mod media_preview;
 pub mod media_processing;
+pub mod media_progress;
 pub mod media_quota;
 pub mod media_retention;
 pub mod media_retry;
@@ -147,6 +148,7 @@ pub use media_metadata::{
 pub use media_output::{MediaOutputError, MediaOutputValidator, ValidatedMediaOutput};
 pub use media_preview::{PreviewError, PreviewFormat, ThumbnailSpec};
 pub use media_processing::{CaptionTrack, FfmpegJobSpec, MediaError, MediaPath, MusicTrack};
+pub use media_progress::{MediaProgressEvent, MediaProgressStore, ProgressError, ProgressSnapshot};
 pub use media_quota::{MediaQuota, QuotaError, QuotaLimit, QuotaReservation, QuotaUsage};
 pub use media_retention::{
     CleanupReport, MediaArtifact, MediaRetention, RetentionError, RetentionPolicy,
