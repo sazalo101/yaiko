@@ -34,6 +34,8 @@ pub mod media_cursor;
 pub mod media_delivery;
 pub mod media_delivery_policy;
 pub mod media_editor;
+#[cfg(feature = "persistent-media")]
+pub mod media_editor_repository;
 pub mod media_export;
 pub mod media_export_presets;
 pub mod media_graph;
@@ -226,6 +228,8 @@ pub use media_cursor::{
 pub use media_delivery::{ByteRange, MediaAsset, MediaDelivery, MediaResponse, RangeError};
 pub use media_delivery_policy::{DeliveryHeaders, DeliveryPolicyError, MediaDeliveryPolicy};
 pub use media_editor::{EditorError, EditorSnapshot, MediaEditorStore};
+#[cfg(feature = "persistent-media")]
+pub use media_editor_repository::{MediaEditorRepository, MediaEditorRepositoryError};
 pub use media_export::{AudioCodec, Container, ExportError, ExportProfile, VideoCodec};
 pub use media_export_presets::{ExportPresetError, MediaExportPreset, MediaExportPresetStore};
 pub use media_graph::{MediaGraph, MediaGraphError, MediaNode, NodeState};

@@ -2,7 +2,7 @@
 
 ## Executive assessment
 
-Yaiko already contains broad foundations for HTTP routing, templates, static files, sessions, middleware, storage, SQLx database access, validation, caching, authentication, cryptography, rate limiting, webhooks, uploads, background tasks, metrics, tracing, health checks, media editing, collaboration, and deployment configuration. The requested catalog therefore contains many capabilities that are present under different names, while the largest gaps are frontend primitives, HTTP/2 and network/TLS helpers, SSR/SSG/ISR/hydration, query-client ergonomics, RBAC, RPC/proxy, pub/sub/event buses, HMR/watch/type generation, rollback/SSL/Docker tooling, feed/robots, and persistent implementations of several in-memory media stores.
+Yaiko already contains broad foundations for HTTP routing, templates, static files, sessions, middleware, storage, SQLx database access, validation, caching, authentication, cryptography, rate limiting, webhooks, uploads, background tasks, metrics, tracing, health checks, media editing, collaboration, and deployment configuration. The requested catalog therefore contains many capabilities that are present under different names, while the largest gaps are frontend primitives, HTTP/2 and network/TLS helpers, SSR/SSG/ISR/hydration, query-client ergonomics, RBAC, RPC/proxy, pub/sub/event buses, HMR/watch/type generation, rollback/SSL/Docker tooling, feed/robots, and the remaining HTTP/WebSocket and worker integration around media workflows.
 
 | Catalog area | Present or partial Yaiko coverage | Missing or materially incomplete | Priority |
 |---|---|---|---|
@@ -17,10 +17,12 @@ Yaiko already contains broad foundations for HTTP routing, templates, static fil
 | Observability | `audit`, `metrics`, `metrics_registry`, `tracing_context`, `health`, `error` | Unified log facade and observability export facade | P1 |
 | Deployment | `config`, `server`, `static_files`, `storage` | Deploy, rollback, SSL, Docker orchestration modules | P1 |
 | Utilities | `http_client`, `media_processing`, `compression`, `i18n`, `seo` | URL/path facades, sitemap is partial, RSS/Atom feed, robots.txt | P1 |
-| Media/editor | Extensive media modules and seven recent collaboration/workflow batches | Persistent repositories, HTTP/WebSocket application APIs, browser editor integration, worker execution | P0 |
+| Media/editor | Extensive media modules, seven recent collaboration/workflow batches, and feature-gated `MediaEditorRepository` SQLite persistence | HTTP/WebSocket application APIs, browser editor integration, worker execution | P0 |
 
 ## Recommended implementation order
 
 The first implementation batch should establish the runtime and application boundary: HTTP/2/network/TLS helpers, stream and worker abstractions, filesystem routing, RBAC, API/RPC/proxy facades, frontend head/metadata/form/link/script primitives, and utility URL/path/robots/feed modules. The second batch should add persistent data ergonomics, queue/pub-sub/events, developer tooling, deployment helpers, and observability facades. The media modules should then be connected to SQLx repositories, HTTP/WebSocket routes, controlled FFmpeg workers, and the browser editor.
+
+The persistent media editor repository is now available behind the `persistent-media` feature and is covered by SQLite tests, strict Clippy, and formatting checks. The remaining media boundary is the application-facing HTTP/WebSocket API, controlled worker execution, artifact delivery, and browser editor integration.
 
 The existing modules should not be duplicated under cosmetic names. For example, `auth.rs` already contains JWT functionality, `openapi.rs` already covers OpenAPI generation, `webhook.rs` and `media_webhook.rs` cover webhook signing, `file_upload.rs` and `resumable_upload.rs` cover uploads, and `media_delivery_policy.rs` covers substantial CORS/range/header behavior. New modules should provide missing abstractions or compatibility facades over these implementations.

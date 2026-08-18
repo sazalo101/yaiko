@@ -13,7 +13,7 @@ Yaiko exposes a growing set of production-oriented built-ins from `yaiko_core`. 
 | API and realtime | `api_facade`, `rpc`, `proxy`, `event_bus`, `pubsub`, `webhook`, `openapi` | Typed route declarations, RPC envelopes, safe upstream policy, ordered events, bounded channels, signed webhooks, and API descriptions. |
 | Developer experience | `watch`, `hmr`, `typegen`, `test_facade`, `lint_policy`, `format_policy` | File-watch policy, HMR events, Rust/TypeScript declarations, structured test reports, lint diagnostics, and source normalization. |
 | Observability and deployment | `log_facade`, `health_facade`, `metrics`, `tracing_context`, `deploy` | Redacted structured logs, readiness aggregation, metrics/tracing, and validated deployment plans. |
-| Media editor | `media_processing`, `media_timeline`, `media_annotations`, `media_review`, `media_asset_versioning`, `media_project_templates`, `media_export_presets` | Captions, music, timelines, annotations, reviews, immutable versions, reusable projects, and safe export profiles. |
+| Media editor | `media_processing`, `media_timeline`, `media_annotations`, `media_review`, `media_asset_versioning`, `media_project_templates`, `media_export_presets`, `media_editor_repository` | Captions, music, timelines, annotations, reviews, immutable versions, reusable projects, safe export profiles, and optional SQLite persistence. |
 
 ## Example: Frontend Metadata and Safe Links
 
@@ -54,10 +54,10 @@ Both modules enforce bounds. Query entries become stale after their TTL, while s
 use yaiko_core::{MediaExportPresetStore, MediaReviewStore};
 
 // Use the media stores alongside the existing timeline and FFmpeg specifications.
-// Persist them through an application repository when moving beyond the in-memory facade.
+// Enable `persistent-media` for the SQLx-backed project repository.
 ```
 
-Media modules currently provide tested domain contracts. The next integration layer is application persistence, HTTP/WebSocket handlers, controlled workers, and a browser editor.
+Media modules provide tested domain contracts. Enable the `persistent-media` feature for `MediaEditorRepository`, which persists project scope, optimistic revisions, ordered assets, and timelines in SQLite. The remaining integration layer is HTTP/WebSocket handlers, controlled workers, and a browser editor.
 
 ## Verification Workflow
 
