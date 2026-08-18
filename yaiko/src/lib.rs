@@ -23,6 +23,7 @@ pub mod file_upload;
 pub mod handler;
 pub mod media_access;
 pub mod media_annotations;
+pub mod media_asset_versioning;
 pub mod media_audio_format;
 pub mod media_cache_key;
 pub mod media_color;
@@ -157,6 +158,10 @@ pub use media_access::{MediaAccessClaims, MediaAccessError, MediaAccessTokens};
 pub use media_annotations::{
     AnnotationError, AnnotationReply, AnnotationSnapshot, AnnotationState, MediaAnnotation,
     MediaAnnotationStore,
+};
+pub use media_asset_versioning::{
+    AssetVersionError, AssetVersionSnapshot, AssetVersionState, MediaAssetVersion,
+    MediaAssetVersionStore,
 };
 pub use media_audio_format::{
     AudioChannels, AudioFormat, AudioFormatError, AudioFormatPolicy, AudioSampleRate,
