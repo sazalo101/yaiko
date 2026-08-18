@@ -1,3 +1,4 @@
+pub mod api_keys;
 pub mod app;
 pub mod audit;
 pub mod auth;
@@ -53,6 +54,9 @@ pub mod testing;
 #[cfg(feature = "dev")]
 pub mod dev;
 
+pub use api_keys::{
+    sign_request, verify_request_signature, ApiKeyError, ApiKeyStore, IssuedApiKey,
+};
 pub use app::App;
 pub use audit::{AuditEvent, AuditEventBuilder, AuditQuery, MemoryAuditSink};
 pub use cache::{Cache, CacheNamespace, CacheResult, CacheStore, MemoryCache};
