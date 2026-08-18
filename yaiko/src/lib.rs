@@ -33,6 +33,7 @@ pub mod config;
 pub mod error;
 pub mod extract;
 pub mod feature_flags;
+pub mod fixtures;
 pub mod health;
 pub mod health_registry;
 pub mod http_client;
@@ -76,6 +77,7 @@ pub use delivery::{unix_seconds, DeliveryError, DeliveryRecord, DeliverySchedule
 pub use error::{AppError, AppResult, ErrorCode, ErrorDetails, ErrorDocument};
 pub use extract::{Form, FromRequest, Json, Path, Query};
 pub use feature_flags::{FeatureChange, FeatureFlagStore, FeatureSnapshot, FeatureValue};
+pub use fixtures::{CleanupGuard, FixtureFactory};
 pub use handler::Handler;
 pub use media_delivery::{ByteRange, MediaAsset, MediaDelivery, MediaResponse, RangeError};
 pub use middleware::Middleware;
