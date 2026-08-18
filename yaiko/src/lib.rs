@@ -1,4 +1,5 @@
 pub mod app;
+pub mod audit;
 pub mod auth;
 pub mod cache;
 pub mod compression;
@@ -43,6 +44,7 @@ pub mod testing;
 pub mod dev;
 
 pub use app::App;
+pub use audit::{AuditEvent, AuditEventBuilder, AuditQuery, MemoryAuditSink};
 pub use cache::{Cache, CacheNamespace, CacheResult, CacheStore, MemoryCache};
 pub use config::Settings;
 pub use database::Database;
