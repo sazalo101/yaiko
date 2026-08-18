@@ -35,6 +35,7 @@ pub mod websocket;
 
 // Validation module
 pub mod validation;
+pub mod versioning;
 
 // Developer experience modules
 pub mod logging;
@@ -93,6 +94,7 @@ pub use file_upload::{parse_multipart, FileUpload};
 pub use compression::CompressionMiddleware;
 
 // WebSocket exports
+pub use versioning::{ApiVersion, VersionDecision, VersionError, VersionNegotiator};
 pub use webhook::{PreparedWebhook, WebhookError, WebhookEvent, WebhookVerifier};
 pub use websocket::{is_websocket_upgrade, WebSocketConnection, WebSocketManager};
 
