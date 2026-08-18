@@ -38,6 +38,7 @@ pub mod media_progress;
 pub mod media_quota;
 pub mod media_retention;
 pub mod media_retry;
+pub mod media_scenes;
 pub mod media_task;
 pub mod media_timeline;
 pub mod media_timestamps;
@@ -162,6 +163,7 @@ pub use media_retention::{
     CleanupReport, MediaArtifact, MediaRetention, RetentionError, RetentionPolicy,
 };
 pub use media_retry::{MediaFailure, MediaRetryPolicy, RetryDecision, RetryError};
+pub use media_scenes::{validate_scenes, SceneBoundary, SceneError, SceneMarker};
 pub use media_task::{MediaTask, MediaTaskError};
 pub use media_timeline::{CaptionOverlay, TimelineClip, TimelineError, TimelineSpec, Transition};
 pub use media_timestamps::{
