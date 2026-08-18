@@ -88,6 +88,7 @@ pub mod schema_validation;
 pub mod search;
 pub mod security;
 pub mod seo;
+pub mod waveform_serialization;
 pub mod webhook;
 pub mod websocket;
 pub mod ws_channels;
@@ -243,6 +244,9 @@ pub use compression::CompressionMiddleware;
 pub use media_waveform::{Chapter, ChapterTrack, Waveform, WaveformError};
 pub use media_webhook::{MediaEventKind, MediaWebhookError, MediaWebhookEvent, MediaWebhookSigner};
 pub use versioning::{ApiVersion, VersionDecision, VersionError, VersionNegotiator};
+pub use waveform_serialization::{
+    serialize_waveform, SerializedWaveform, WaveformChapter, WaveformSerializationError,
+};
 pub use webhook::{PreparedWebhook, WebhookError, WebhookEvent, WebhookVerifier};
 pub use websocket::{is_websocket_upgrade, WebSocketConnection, WebSocketManager};
 pub use ws_channels::{ChannelError, ChannelMessage, ChannelRegistry, CloseReason, HeartbeatState};
