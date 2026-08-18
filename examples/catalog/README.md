@@ -5,7 +5,11 @@ This example is a small HTTP application that demonstrates how Yaiko combines ro
 ## Run
 
 ```bash
-cargo run --manifest-path examples/catalog/Cargo.toml
+cd examples/catalog
+yaiko doctor
+yaiko dev
 ```
+
+Use `yaiko build` in the same directory when you want a production build.
 
 Open `http://127.0.0.1:3010/` for the metadata-rendered page, `http://127.0.0.1:3010/api/catalog` for the JSON module catalog, and `/health` for the health endpoint.

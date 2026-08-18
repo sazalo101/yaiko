@@ -101,6 +101,7 @@ Each batch passed focused tests, strict Clippy, formatting, feature-matrix check
 | `yaiko init <name>` | `-d, --database <type>` *(default: postgres)* | Initialize a new Yaiko project (supports `postgres`, `sqlite`) |
 | `yaiko dev` | `-p, --port <port>` *(default: 3000)*<br>`--host <host>` *(default: 127.0.0.1)* | Start dev server with auto hot-reload |
 | `yaiko build` | `-r, --release` | Build binary with release optimizations |
+| `yaiko run` | — | Build and run the current project once without the development watcher |
 | `yaiko doctor` | — | Check if Rust, Cargo, SQLx & CLI environment are ready |
 | `yaiko migrate create <name>` | — | Create a new SQL migration file in `migrations/` |
 | `yaiko migrate run` | — | Execute pending database migrations |

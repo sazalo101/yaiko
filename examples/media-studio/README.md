@@ -5,7 +5,10 @@ This command-line example demonstrates the feature-gated `persistent-media` inte
 ## Run
 
 ```bash
-cargo run --manifest-path examples/media-studio/Cargo.toml
+cd examples/media-studio
+yaiko doctor
+yaiko build
+yaiko run
 ```
 
 The example creates `media-studio.db` in the current working directory. The repository is implemented by `MediaEditorRepository` and validates project scope, optimistic revisions, duplicate assets, and capacity limits.

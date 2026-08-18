@@ -417,6 +417,7 @@ A new project ships with:
 | `yaiko dev` | Start dev server with hot-reloading |
 | `yaiko dev -p 8080` | Dev server on custom port |
 | `yaiko build --release` | Compile optimized production binary |
+| `yaiko run` | Build and run the current project once without the development watcher |
 | `yaiko doctor` | Check Rust, Cargo, and environment readiness |
 | `yaiko migrate create <name>` | Create a new SQL migration file |
 | `yaiko migrate run` | Run all pending migrations |
@@ -1673,7 +1674,7 @@ Yaiko’s current architecture is organized around small, typed policy and domai
 | Developer tooling | `watch`, `hmr`, `typegen`, `test_facade`, `lint_policy`, `format_policy` |
 | Observability | `log_facade`, `health_facade`, `metrics`, `tracing_context`, `audit`, `error` |
 | Deployment and utilities | `deploy`, `compression_policy`, `url`, `robots`, `feed`, `i18n`, `sitemap` |
-| Media editor | timeline, processing, annotations, reviews, asset versions, project templates, export presets, delivery policies |
+| Media editor | timeline, processing, annotations, reviews, asset versions, project templates, export presets, delivery policies, `MediaEditorRepository` | Captions, background music, bounded editing policies, signed delivery, and optional SQLx SQLite project persistence. |
 
 ### Design Rules
 
@@ -1683,7 +1684,35 @@ The built-ins share several production-oriented rules. Inputs are bounded, paths
 
 The media modules now cover substantial editor-domain behavior: captions, background music, timeline composition, thumbnails and metadata, immutable asset versions, project templates, annotations, review decisions, presence, cursors, selection locks, export presets, signed access, quotas, retention, resumable uploads, and progress events.
 
-These modules are not presented as a complete hosted editor by themselves. The remaining application boundary consists of SQLx-backed repositories, HTTP and WebSocket handlers, controlled FFmpeg workers, signed artifact delivery, browser timeline components, upload UX, and end-to-end integration tests. Keeping this boundary explicit makes the framework reusable for both ordinary web applications and specialized video workflows.
+These modules are not presented as a complete hosted editor by themselves. The `persistent-media` feature now provides a SQLx-backed SQLite `MediaEditorRepository` for project scope, optimistic revisions, ordered assets, and timelines. The remaining application boundary consists of HTTP and WebSocket handlers, controlled FFmpeg workers, signed artifact delivery, browser timeline components, upload UX, and end-to-end integration tests. Keeping this boundary explicit makes the framework reusable for both ordinary web applications and specialized video workflows.
+
+### CLI-First Example Workflow
+
+Yaiko examples are Yaiko projects: each example contains a `Cargo.toml` and a `yaiko.toml`. Run the CLI from the example directory rather than invoking Cargo with a manifest path.
+
+```bash
+# Install the local CLI once from the repository root.
+cargo install --path yaiko-cli --force
+
+# Run the HTTP catalog example.
+cd examples/catalog
+yaiko doctor
+yaiko dev
+
+# In another terminal, build it for production.
+cd examples/catalog
+yaiko build --release
+```
+
+The same workflow applies to the other new examples:
+
+| Example | Command sequence | Purpose |
+|---|---|---|
+| `catalog` | `cd examples/catalog && yaiko doctor && yaiko dev` | Router, health, head, metadata, and JSON |
+| `media-studio` | `cd examples/media-studio && yaiko doctor && yaiko build && yaiko run` | SQLite-backed media project persistence |
+| `webhook-inbox` | `cd examples/webhook-inbox && yaiko doctor && yaiko build && yaiko run` | Signed webhook verification and replay protection |
+
+Use `yaiko build --release` in an example directory for the optimized production binary. Use `yaiko dev` for long-running HTTP applications with the development watcher, and `yaiko run` for command-line examples that should build and execute once.
 
 ### Verification and Release Discipline
 

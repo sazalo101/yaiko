@@ -664,6 +664,7 @@ Your app is now live 24/7!
 | `yaiko init my-app` | Creates a new web project |
 | `yaiko dev` | Starts the live development server |
 | `yaiko build --release` | Compiles your app for production |
+| `yaiko run` | Builds and runs the current project once |
 | `yaiko migrate create <name>` | Creates a database migration file |
 | `yaiko migrate run` | Applies all database migrations |
 
@@ -733,12 +734,12 @@ A bounded cache prevents an accidental request pattern from growing without limi
 After changing a built-in or an example, run focused tests first, then format and lint the workspace. The repository also verifies SQLite, PostgreSQL, metrics, and development feature combinations, the CLI, and the blog/chat/auth examples. A useful local sequence is:
 
 ```bash
-cargo fmt --manifest-path yaiko/Cargo.toml -- --check
-cargo test --manifest-path yaiko/Cargo.toml --all-features
-cargo clippy --manifest-path yaiko/Cargo.toml --all-features --all-targets -- -D warnings
-cargo build --manifest-path examples/blog/Cargo.toml
-cargo build --manifest-path examples/chat/Cargo.toml
-cargo build --manifest-path examples/auth/Cargo.toml
+(cd yaiko && cargo fmt -- --check)
+(cd yaiko && cargo test --all-features)
+(cd yaiko && cargo clippy --all-features --all-targets -- -D warnings)
+(cd examples/blog && yaiko doctor && yaiko build)
+(cd examples/chat && yaiko doctor && yaiko build)
+(cd examples/auth && yaiko doctor && yaiko build)
 ```
 
 The media-editor modules are currently tested domain building blocks. Completing a browser video editor still requires application persistence, HTTP/WebSocket handlers, controlled FFmpeg workers, artifact delivery, and frontend integration. That distinction helps beginners understand which code is framework policy and which code belongs in an application.

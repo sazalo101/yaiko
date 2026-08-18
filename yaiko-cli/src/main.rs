@@ -44,6 +44,9 @@ enum Commands {
         release: bool,
     },
 
+    /// Run the current project once without the development watcher
+    Run,
+
     /// Check whether the local environment is ready for Yaiko
     Doctor,
 
@@ -120,6 +123,9 @@ async fn main() -> anyhow::Result<()> {
         }
         Commands::Build { release } => {
             commands::build::run(release).await?;
+        }
+        Commands::Run => {
+            commands::run::run().await?;
         }
         Commands::Doctor => {
             commands::doctor::run().await?;

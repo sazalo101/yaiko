@@ -5,7 +5,10 @@ This example demonstrates signed webhook events using Yaiko’s `WebhookEvent` a
 ## Run
 
 ```bash
-cargo run --manifest-path examples/webhook-inbox/Cargo.toml
+cd examples/webhook-inbox
+yaiko doctor
+yaiko build
+yaiko run
 ```
 
 For a production HTTP endpoint, pass the raw request body and the received signature header to the same verifier before decoding or dispatching the event.
