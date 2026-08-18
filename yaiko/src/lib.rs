@@ -18,6 +18,7 @@ pub mod session;
 pub mod static_files;
 pub mod storage;
 pub mod template;
+pub mod tenant;
 
 // Production modules
 pub mod config;
@@ -80,6 +81,7 @@ pub use auth::{
 pub use logging::{init_tracing, LoggingMiddleware};
 
 // Testing exports
+pub use tenant::{TenantContext, TenantError, TenantId, TenantQuota, TenantResolver};
 pub use testing::{TestClient, TestResponse};
 
 // File upload exports
