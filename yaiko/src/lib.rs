@@ -29,6 +29,7 @@ pub mod static_files;
 pub mod storage;
 pub mod template;
 pub mod tenant;
+pub mod upload_policy;
 
 // Production modules
 pub mod config;
@@ -109,6 +110,9 @@ pub use server::Server;
 pub use session::{MemorySessionStore, Session, SessionHandle, SessionMiddleware, SessionStore};
 pub use static_files::StaticFiles;
 pub use storage::{LocalStorage, Storage, StorageResult};
+pub use upload_policy::{
+    checksum, sanitize_filename, TempUploadGuard, UploadError, UploadMetadata, UploadPolicy,
+};
 
 // Security exports
 pub use security::{CsrfProtection, RateLimiter, SecurityHeaders};
