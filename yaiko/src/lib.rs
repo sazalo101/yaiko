@@ -23,6 +23,7 @@ pub mod template;
 pub mod config;
 pub mod error;
 pub mod extract;
+pub mod feature_flags;
 pub mod health;
 pub mod idempotency;
 pub mod jobs;
@@ -51,6 +52,7 @@ pub use config::Settings;
 pub use database::Database;
 pub use error::{AppError, AppResult, ErrorCode, ErrorDetails, ErrorDocument};
 pub use extract::{Form, FromRequest, Json, Path, Query};
+pub use feature_flags::{FeatureChange, FeatureFlagStore, FeatureSnapshot, FeatureValue};
 pub use handler::Handler;
 pub use middleware::Middleware;
 pub use oauth::{
