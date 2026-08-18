@@ -118,6 +118,7 @@ pub mod seo;
 pub mod waveform_serialization;
 pub mod webhook;
 pub mod websocket;
+pub mod worker;
 pub mod ws_channels;
 pub mod ws_protocol;
 
@@ -320,6 +321,7 @@ pub use waveform_serialization::{
 };
 pub use webhook::{PreparedWebhook, WebhookError, WebhookEvent, WebhookVerifier};
 pub use websocket::{is_websocket_upgrade, WebSocketConnection, WebSocketManager};
+pub use worker::{WorkerError, WorkerPool, WorkerState, WorkerTask};
 pub use ws_channels::{ChannelError, ChannelMessage, ChannelRegistry, CloseReason, HeartbeatState};
 pub use ws_protocol::{WsEnvelope, WsProtocol, WsProtocolError};
 
