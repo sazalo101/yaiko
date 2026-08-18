@@ -13,6 +13,8 @@ A modern, production-ready fullstack web framework for **Rust + jQuery**.
 
 ## Features
 
+Yaiko includes typed, bounded built-ins for frontend rendering, data access, security, APIs, realtime workflows, developer tooling, observability, deployment planning, utilities, and media editing. See the [built-in module catalog](built-in-modules.md) for the current list and examples.
+
 - **🚀 Fast** - Built on Rust with hyper for blazing fast performance
 - **🔒 Secure** - CSRF protection, rate limiting, security headers out of the box
 - **📦 Full Stack** - Rust backend + jQuery frontend, batteries included
@@ -87,6 +89,14 @@ csrf_enabled = true
 robots_txt_enabled = true
 sitemap_enabled = true
 ```
+
+## Documentation Guides
+
+- [Yaiko for Beginners](beginners-book.md)
+- [The Yaiko Book](book.md)
+- [Built-in Modules](built-in-modules.md)
+- [CLI Reference](cli.md)
+- [Deployment](deployment.md)
 
 ## License
 

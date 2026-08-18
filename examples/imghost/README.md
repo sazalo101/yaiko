@@ -14,6 +14,7 @@ A modern, free image hosting web application built with the **Yaiko** framework.
 - **Viewer Page** — `/i/:id` displays image metadata, view count, and embed snippets (HTML, Markdown)
 - **Delete Token** — Each upload gets a secret token for authorized deletion
 - **Multiple formats** — Supports JPEG, PNG, GIF, WebP, SVG, BMP up to 10 MB
+- **Yaiko media boundaries** — Demonstrates uploads, storage, static asset policy, image metadata, signed delivery concepts, and production deployment
 
 ## Quick Start
 
@@ -70,6 +71,10 @@ imghost/
         ├── image.rs       # GET/DELETE image metadata
         └── gallery.rs     # (private) gallery endpoint
 ```
+
+## Yaiko built-ins demonstrated
+
+This example is a practical companion to the [built-in module catalog](../docs/content/built-in-modules.md). It combines `file_upload`, database migrations, static asset serving, image/media validation, request limits, security headers, and deployment configuration. For a production editor, the same boundaries can be extended with `media_timeline`, `media_annotations`, `media_review`, and `media_export_presets`.
 
 ## Production Deployment
 

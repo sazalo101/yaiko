@@ -15,6 +15,7 @@ Welcome to **Yaiko** — a modern, production-ready fullstack web framework for 
 | [Security](security.md)               | CSRF, rate limiting, auth             |
 | [Frontend](frontend.md)               | jQuery + Handlebars templates         |
 | [Deployment](deployment.md)           | Deploy to VPS with nginx              |
+| [Built-in Modules](../examples/docs/content/built-in-modules.md) | Typed frontend, data, API, realtime, tooling, and media facades |
 
 ## Why Yaiko?
 
@@ -22,6 +23,7 @@ Welcome to **Yaiko** — a modern, production-ready fullstack web framework for 
 - **Secure** — Security middleware included
 - **Full Stack** — Backend + frontend in one
 - **CLI** — Scaffolding, dev server, migrations
+- **Typed built-ins** — Validated policies for frontend primitives, data, security, API/RPC, realtime, tooling, observability, deployment, and media editing
 
 ## Install
 
@@ -36,3 +38,5 @@ cd my-app && yaiko dev
 - [Static Blog](../examples/blog) — Simple blog with markdown posts
 - [Notes App](../examples/notes) — CRUD note-taking application
 - [AI Chat](../examples/chat) — Claude-like chat with OpenRouter API
+- [Built-in module catalog](../examples/docs/content/built-in-modules.md) — Current built-ins and usage examples
+- [ImgHost](../examples/imghost) — Uploads, storage, media delivery, and production deployment patterns

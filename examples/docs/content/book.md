@@ -1653,3 +1653,60 @@ TestClient::new(router)
     .assert_status(200)
     .assert_body_contains("text")
 ```
+
+
+---
+
+## Chapter 27 — The Built-in Module Catalog
+
+Yaiko’s current architecture is organized around small, typed policy and domain facades. They are designed to be composed with the router, handlers, templates, SQLx database layer, WebSockets, and background workers rather than replacing application-specific architecture.
+
+### Catalog by Area
+
+| Area | Current built-ins |
+|---|---|
+| Runtime and routing | `network_endpoint`, `fs_router`, `router`, `worker` |
+| Frontend primitives | `image`, `font`, `form`, `link`, `head`, `metadata`, `script`, `style`, `icon`, `static_asset` |
+| Data | `query_client`, `serialize`, `transaction`, `pool`, `data_transfer` |
+| Security | `rbac`, `auth`, `cors`, `csp`, `rate_limit`, `media_access` |
+| API and realtime | `api_facade`, `rpc`, `proxy`, `event_bus`, `pubsub`, `webhook`, `openapi` |
+| Developer tooling | `watch`, `hmr`, `typegen`, `test_facade`, `lint_policy`, `format_policy` |
+| Observability | `log_facade`, `health_facade`, `metrics`, `tracing_context`, `audit`, `error` |
+| Deployment and utilities | `deploy`, `compression_policy`, `url`, `robots`, `feed`, `i18n`, `sitemap` |
+| Media editor | timeline, processing, annotations, reviews, asset versions, project templates, export presets, delivery policies |
+
+### Design Rules
+
+The built-ins share several production-oriented rules. Inputs are bounded, paths and URLs are validated, sensitive fields are redacted where appropriate, deterministic ordering is used for snapshots and generated output, and invalid state transitions return structured errors. The facades are deliberately explicit about policy decisions such as cache capacity, retry limits, TTLs, deployment environment requirements, and reload behavior.
+
+### Media Editor Boundary
+
+The media modules now cover substantial editor-domain behavior: captions, background music, timeline composition, thumbnails and metadata, immutable asset versions, project templates, annotations, review decisions, presence, cursors, selection locks, export presets, signed access, quotas, retention, resumable uploads, and progress events.
+
+These modules are not presented as a complete hosted editor by themselves. The remaining application boundary consists of SQLx-backed repositories, HTTP and WebSocket handlers, controlled FFmpeg workers, signed artifact delivery, browser timeline components, upload UX, and end-to-end integration tests. Keeping this boundary explicit makes the framework reusable for both ordinary web applications and specialized video workflows.
+
+### Verification and Release Discipline
+
+New built-in batches follow a consistent release process: focused module tests; formatting; strict Clippy; diff checks; SQLite, PostgreSQL, metrics, and development feature combinations; CLI tests; and builds of the blog, chat, and auth examples. The verified history is recorded in the repository README, while the complete catalog is maintained in [the built-in module guide](built-in-modules.md).
+
+### Example Composition
+
+A typical application composes these layers rather than using every module at once:
+
+```rust
+use yaiko_core::{
+    App, Head, Link, LogFacade, QueryClient, Router, SecurityHeaders,
+};
+
+// Configure the application boundary first.
+let mut logs = LogFacade::new(1_000);
+let queries = QueryClient::new(256);
+let head = Head::new().title("Example application");
+let home = Link::new("/", "Home")?;
+let router = Router::new().get("/", home_handler);
+let _app = App::new()
+    .router(router)
+    .middleware(SecurityHeaders::new());
+```
+
+The exact composition depends on whether the project is a static site, API, realtime application, or media editor. The examples directory demonstrates complete applications, while the built-in module guide demonstrates isolated policies.

@@ -20,6 +20,7 @@
 11. [Chapter 11 — Real-Time Updates Explained Simply](#chapter-11-real-time-updates-explained-simply)
 12. [Chapter 12 — Putting Your Web App Online](#chapter-12-putting-your-web-app-online)
 13. [Chapter 13 — Beginner Cheat Sheet](#chapter-13-beginner-cheat-sheet)
+14. [Chapter 14 — Choosing Yaiko Built-ins](#chapter-14-choosing-yaiko-built-ins)
 
 ---
 
@@ -684,4 +685,60 @@ Congratulations on taking your first steps with **Yaiko**!
 
 You now know how web servers work, how to build web pages with HTML and jQuery, how to save data in SQLite databases, and how to put your code live on the web.
 
-For deeper architectural topics, performance benchmarks, and advanced project ideas, read **[The Yaiko Book](BOOK.md)**.
+For deeper architectural topics, performance benchmarks, and advanced project ideas, read **[The Yaiko Book](book.md)**.
+
+
+## Chapter 14 — Choosing Yaiko Built-ins
+
+As your application grows, Yaiko gives you small typed facades for common policies instead of requiring every project to invent them independently. The most useful beginner rule is to validate at the boundary: validate paths before serving files, validate URLs before creating links, validate environment requirements before deployment, and bound payloads before caching or serializing them.
+
+### A Practical Catalog
+
+| If you need to… | Start with |
+|---|---|
+| Build safe pages | `Head`, `Metadata`, `Link`, `Image`, `Font`, `Script`, `Style`, and `Icon` |
+| Cache API results | `QueryClient` with a bounded capacity and TTL |
+| Create API contracts | `ApiFacade`, `RpcFacade`, `OpenApiDocument`, and `TypeGenerator` |
+| Add realtime behavior | `EventBus`, `PubSub`, `WorkerPool`, and `Watcher`/`HmrPolicy` |
+| Improve operations | `LogFacade`, `HealthFacade`, `LintPolicy`, and `DeployPlan` |
+| Build a video editor | `MediaTimeline`, captions/music processing, annotations, reviews, versions, templates, and export presets |
+
+### Example: A Safe Frontend Link
+
+```rust
+use yaiko_core::{Link, NavigationMode, Prefetch};
+
+let link = Link::new("/notes", "View notes")?
+    .navigation(NavigationMode::Client)
+    .prefetch(Prefetch::Intent);
+println!("{}", link.render());
+```
+
+The link builder rejects unsafe targets before rendering HTML. This is easier to reason about than assembling arbitrary attributes in every template.
+
+### Example: A Bounded Query Cache
+
+```rust
+use yaiko_core::QueryClient;
+
+let mut queries = QueryClient::new(64);
+queries.set("notes:recent", b"[]".to_vec(), 0, 30)?;
+assert!(queries.get("notes:recent", 10).is_some());
+```
+
+A bounded cache prevents an accidental request pattern from growing without limit. TTL checks make stale data explicit.
+
+### Verification Habit
+
+After changing a built-in or an example, run focused tests first, then format and lint the workspace. The repository also verifies SQLite, PostgreSQL, metrics, and development feature combinations, the CLI, and the blog/chat/auth examples. A useful local sequence is:
+
+```bash
+cargo fmt --manifest-path yaiko/Cargo.toml -- --check
+cargo test --manifest-path yaiko/Cargo.toml --all-features
+cargo clippy --manifest-path yaiko/Cargo.toml --all-features --all-targets -- -D warnings
+cargo build --manifest-path examples/blog/Cargo.toml
+cargo build --manifest-path examples/chat/Cargo.toml
+cargo build --manifest-path examples/auth/Cargo.toml
+```
+
+The media-editor modules are currently tested domain building blocks. Completing a browser video editor still requires application persistence, HTTP/WebSocket handlers, controlled FFmpeg workers, artifact delivery, and frontend integration. That distinction helps beginners understand which code is framework policy and which code belongs in an application.
