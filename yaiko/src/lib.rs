@@ -1,5 +1,6 @@
 pub mod api_keys;
 pub mod app;
+pub mod audio_processing;
 pub mod audit;
 pub mod audit_sinks;
 pub mod auth;
@@ -94,6 +95,7 @@ pub use api_keys::{
     sign_request, verify_request_signature, ApiKeyError, ApiKeyStore, IssuedApiKey,
 };
 pub use app::App;
+pub use audio_processing::{AudioProcessingError, AudioProcessingSpec, Ducking, LoudnessTarget};
 pub use audit::{AuditEvent, AuditEventBuilder, AuditQuery, MemoryAuditSink};
 pub use audit_sinks::{
     AuditFilter, AuditSink, AuditSinkError, BufferedAuditSink, FilteredAuditSink, JsonlAuditSink,
