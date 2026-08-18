@@ -9,6 +9,7 @@ pub mod handler;
 #[cfg(feature = "metrics")]
 pub mod metrics;
 pub mod middleware;
+pub mod migrations;
 pub mod rate_limit;
 pub mod request;
 pub mod response;
@@ -58,6 +59,7 @@ pub use extract::{Form, FromRequest, Json, Path, Query};
 pub use feature_flags::{FeatureChange, FeatureFlagStore, FeatureSnapshot, FeatureValue};
 pub use handler::Handler;
 pub use middleware::Middleware;
+pub use migrations::{AppliedMigration, Migration, MigrationError, MigrationPlan, MigrationRunner};
 pub use oauth::{
     OAuthCallback, OAuthProvider, OAuthState, OAuthTokenResponse, OidcUserInfo, PkceChallenge,
 };
