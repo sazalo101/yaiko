@@ -14,6 +14,7 @@ pub mod media_delivery;
 pub mod metrics;
 pub mod middleware;
 pub mod migrations;
+pub mod notifications;
 pub mod rate_limit;
 pub mod request;
 pub mod response;
@@ -71,6 +72,9 @@ pub use handler::Handler;
 pub use media_delivery::{ByteRange, MediaAsset, MediaDelivery, MediaResponse, RangeError};
 pub use middleware::Middleware;
 pub use migrations::{AppliedMigration, Migration, MigrationError, MigrationPlan, MigrationRunner};
+pub use notifications::{
+    DeliveryResult, NotificationEnvelope, NotificationTemplate, RetryPolicy, TemplateError,
+};
 pub use oauth::{
     OAuthCallback, OAuthProvider, OAuthState, OAuthTokenResponse, OidcUserInfo, PkceChallenge,
 };
