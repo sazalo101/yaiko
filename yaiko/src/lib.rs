@@ -9,6 +9,7 @@ pub mod handler;
 #[cfg(feature = "metrics")]
 pub mod metrics;
 pub mod middleware;
+pub mod rate_limit;
 pub mod request;
 pub mod response;
 pub mod router;
@@ -56,6 +57,7 @@ pub use oauth::{
     OAuthCallback, OAuthProvider, OAuthState, OAuthTokenResponse, OidcUserInfo, PkceChallenge,
 };
 pub use openapi::{OpenApiDocument, OpenApiHandler, OpenApiOperation, OpenApiResponse};
+pub use rate_limit::{MemoryRateLimiter, QuotaPolicy, RateLimitDecision};
 pub use request::Request;
 pub use response::Response;
 pub use router::{Route, Router};
