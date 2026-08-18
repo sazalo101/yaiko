@@ -15,6 +15,7 @@ pub mod data_transfer;
 pub mod database;
 pub mod delivery;
 pub mod delivery_observability;
+pub mod distributed_lease;
 pub mod distributed_rate_limit;
 pub mod encryption;
 pub mod file_upload;
@@ -102,6 +103,7 @@ pub use data_transfer::{
 pub use database::Database;
 pub use delivery::{unix_seconds, DeliveryError, DeliveryRecord, DeliveryScheduler, DeliveryState};
 pub use delivery_observability::{DeliveryObservation, DeliveryObserver, DeliveryOutcome};
+pub use distributed_lease::{DistributedLease, Lease, LeaseError, LeaseStore, MemoryLeaseStore};
 pub use distributed_rate_limit::{
     DistributedDecision, DistributedRateLimitError, DistributedRateLimiter, MemoryRateLimitStore,
     RateLimitStore, WindowPolicy,
