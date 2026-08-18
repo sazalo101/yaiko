@@ -28,6 +28,7 @@ pub mod media_color;
 pub mod media_content_type;
 pub mod media_delivery;
 pub mod media_delivery_policy;
+pub mod media_editor;
 pub mod media_export;
 pub mod media_graph;
 pub mod media_limits;
@@ -158,6 +159,7 @@ pub use media_color::{
 pub use media_content_type::{sniff_media, ContentTypeError, MediaContentType, MediaKind};
 pub use media_delivery::{ByteRange, MediaAsset, MediaDelivery, MediaResponse, RangeError};
 pub use media_delivery_policy::{DeliveryHeaders, DeliveryPolicyError, MediaDeliveryPolicy};
+pub use media_editor::{EditorError, EditorSnapshot, MediaEditorStore};
 pub use media_export::{AudioCodec, Container, ExportError, ExportProfile, VideoCodec};
 pub use media_graph::{MediaGraph, MediaGraphError, MediaNode, NodeState};
 pub use media_limits::{MediaFacts, MediaLimits, MediaLimitsError};
