@@ -1,5 +1,6 @@
 //! Media-processing task orchestration over the task-result store.
 
+use crate::media_output::{MediaOutputError, MediaOutputValidator};
 use crate::media_processing::FfmpegJobSpec;
 use crate::task_results::{TaskResultError, TaskResultStore, TaskState};
 use std::future::Future;
@@ -10,6 +11,7 @@ pub enum MediaTaskError {
     Task(TaskResultError),
     Cancelled,
     ProcessFailed(String),
+    OutputValidation(MediaOutputError),
 }
 
 #[derive(Clone)]
@@ -58,6 +60,51 @@ impl MediaTask {
     pub fn result(&self) -> Option<crate::task_results::TaskResult> {
         self.results.get(&self.id)
     }
+    pub async fn execute_validated<F, Fut>(
+        &self,
+        validator: &MediaOutputValidator,
+        output_path: impl Into<std::path::PathBuf>,
+        runner: F,
+    ) -> Result<Vec<u8>, MediaTaskError>
+    where
+        F: FnOnce(Arc<FfmpegJobSpec>) -> Fut,
+        Fut: Future<Output = Result<Vec<u8>, String>> + Send,
+    {
+        self.start()?;
+        let output = runner(self.spec.clone()).await;
+        if self.cancellation_requested() {
+            let _ = self.results.cancel(&self.id);
+            return Err(MediaTaskError::Cancelled);
+        }
+        match output {
+            Ok(bytes) => {
+                let metadata = validator.validate(output_path).map_err(|error| {
+                    let _ = self
+                        .results
+                        .fail(&self.id, format!("output validation failed: {error:?}"));
+                    MediaTaskError::OutputValidation(error)
+                })?;
+                let manifest = format!(
+                    "{}|{}|{}",
+                    metadata.path.display(),
+                    metadata.size_bytes,
+                    metadata.checksum_sha256
+                )
+                .into_bytes();
+                self.results
+                    .succeed(&self.id, manifest)
+                    .map_err(MediaTaskError::Task)?;
+                Ok(bytes)
+            }
+            Err(error) => {
+                self.results
+                    .fail(&self.id, error.clone())
+                    .map_err(MediaTaskError::Task)?;
+                Err(MediaTaskError::ProcessFailed(error))
+            }
+        }
+    }
+
     pub async fn execute<F, Fut>(&self, runner: F) -> Result<Vec<u8>, MediaTaskError>
     where
         F: FnOnce(Arc<FfmpegJobSpec>) -> Fut,
