@@ -35,6 +35,7 @@ pub mod extract;
 pub mod feature_flags;
 pub mod health;
 pub mod health_registry;
+pub mod http_client;
 pub mod idempotency;
 pub mod jobs;
 pub mod security;
@@ -132,6 +133,9 @@ pub use jobs::{DeadLetter, Job, JobQueue};
 pub use health::{DetailedHealthCheck, HealthCheck, LivenessCheck, ReadinessCheck};
 pub use health_registry::{
     DependencyHealthHandler, DependencyHealthRegistry, HealthReport, ProbeResult,
+};
+pub use http_client::{
+    HttpClientError, HttpRequestSpec, HttpResponse, HttpRetryPolicy, OutboundHttpClient,
 };
 
 // Re-export commonly used types
