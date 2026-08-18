@@ -51,6 +51,7 @@ pub mod versioning;
 pub mod logging;
 pub mod oauth;
 pub mod openapi;
+pub mod pagination;
 pub mod privacy;
 pub mod testing;
 pub mod tracing_context;
@@ -85,6 +86,7 @@ pub use oauth::{
     OAuthCallback, OAuthProvider, OAuthState, OAuthTokenResponse, OidcUserInfo, PkceChallenge,
 };
 pub use openapi::{OpenApiDocument, OpenApiHandler, OpenApiOperation, OpenApiResponse};
+pub use pagination::{CursorCodec, Page, PageRequest, PaginationError};
 pub use privacy::{PrivacyPolicy, SecretString};
 pub use rate_limit::{MemoryRateLimiter, QuotaPolicy, RateLimitDecision};
 pub use request::Request;
