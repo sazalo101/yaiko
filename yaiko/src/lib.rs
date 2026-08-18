@@ -26,6 +26,7 @@ pub mod media_output;
 pub mod media_preview;
 pub mod media_processing;
 pub mod media_task;
+pub mod media_timeline;
 #[cfg(feature = "metrics")]
 pub mod metrics;
 pub mod metrics_registry;
@@ -129,6 +130,7 @@ pub use media_output::{MediaOutputError, MediaOutputValidator, ValidatedMediaOut
 pub use media_preview::{PreviewError, PreviewFormat, ThumbnailSpec};
 pub use media_processing::{CaptionTrack, FfmpegJobSpec, MediaError, MediaPath, MusicTrack};
 pub use media_task::{MediaTask, MediaTaskError};
+pub use media_timeline::{CaptionOverlay, TimelineClip, TimelineError, TimelineSpec, Transition};
 pub use metrics_registry::{
     MetricError, MetricKind, MetricValue, MetricsRegistry, MetricsSnapshot,
 };
