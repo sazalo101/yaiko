@@ -139,6 +139,7 @@ pub mod pagination;
 pub mod privacy;
 pub mod proxy;
 pub mod pubsub;
+pub mod queue;
 pub mod testing;
 pub mod tracing_context;
 
@@ -269,6 +270,7 @@ pub use pagination::{CursorCodec, Page, PageRequest, PaginationError};
 pub use privacy::{PrivacyPolicy, SecretString};
 pub use proxy::{ProxyError, ProxyMethod, ProxyPolicy, ProxyRequest};
 pub use pubsub::{PubSub, PubSubError, PubSubMessage, PubSubSubscription};
+pub use queue::{Queue, QueueError, QueueItem, QueueState};
 pub use rate_limit::{MemoryRateLimiter, QuotaPolicy, RateLimitDecision};
 pub use rbac::{RbacError, RbacPolicy, Role};
 pub use request::Request;
