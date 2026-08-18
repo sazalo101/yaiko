@@ -106,6 +106,7 @@ pub mod form;
 pub mod fs_router;
 pub mod head;
 pub mod health;
+pub mod health_facade;
 pub mod health_registry;
 pub mod http_client;
 pub mod i18n;
@@ -357,6 +358,10 @@ pub use jobs::{DeadLetter, Job, JobQueue};
 // Health check exports
 pub use head::{Head, HeadError};
 pub use health::{DetailedHealthCheck, HealthCheck, LivenessCheck, ReadinessCheck};
+pub use health_facade::{
+    ComponentReport, ComponentStatus, HealthError, HealthFacade,
+    HealthStatus as AggregatedHealthStatus,
+};
 pub use health_registry::{
     DependencyHealthHandler, DependencyHealthRegistry, HealthReport, ProbeResult,
 };
