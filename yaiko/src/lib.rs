@@ -33,6 +33,7 @@ pub mod media_preview;
 pub mod media_processing;
 pub mod media_quota;
 pub mod media_retention;
+pub mod media_retry;
 pub mod media_task;
 pub mod media_timeline;
 #[cfg(feature = "metrics")]
@@ -150,6 +151,7 @@ pub use media_quota::{MediaQuota, QuotaError, QuotaLimit, QuotaReservation, Quot
 pub use media_retention::{
     CleanupReport, MediaArtifact, MediaRetention, RetentionError, RetentionPolicy,
 };
+pub use media_retry::{MediaFailure, MediaRetryPolicy, RetryDecision, RetryError};
 pub use media_task::{MediaTask, MediaTaskError};
 pub use media_timeline::{CaptionOverlay, TimelineClip, TimelineError, TimelineSpec, Transition};
 pub use metrics_registry::{
