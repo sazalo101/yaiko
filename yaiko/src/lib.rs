@@ -2,6 +2,7 @@ pub mod api_keys;
 pub mod app;
 pub mod audit;
 pub mod auth;
+pub mod body_stream;
 pub mod cache;
 pub mod coalescing;
 pub mod compression;
@@ -137,6 +138,7 @@ pub use security::{CsrfProtection, RateLimiter, SecurityHeaders};
 pub use auth::{
     login_session, logout_session, require_role, AuthMiddleware, Claims, JwtAuth, SessionAuth,
 };
+pub use body_stream::{read_bounded, BodyCancellation, BodyReadReport, BodyStreamError};
 
 // Logging exports
 pub use lifecycle::{LifecycleError, ServiceRegistry, ServiceState, ShutdownReport, ShutdownToken};
