@@ -85,6 +85,7 @@ impl Handler for App {
         let not_found_req_uri = req.uri.clone();
         let not_found_req_method = req.method.clone();
         let not_found_req_headers = req.headers.clone();
+        let request_id = req.request_id.clone();
 
         // Wrap the core routing logic inside catch_unwind
         let result = AssertUnwindSafe(async { self.router.handle_request(req).await })
@@ -162,24 +163,27 @@ impl Handler for App {
                 Ok(res)
             }
             Ok(Err(e)) => {
-                // Handle natural framework Errors
+                if let Some(app_error) = e.downcast_ref::<crate::error::AppError>() {
+                    return Ok(app_error.response_with_request_id(Some(&request_id)));
+                }
+
+                // Preserve the custom error hook for untyped application errors.
                 if let Some(handler) = &self.error_handler {
                     Ok(handler(e))
                 } else {
-                    Ok(Response::new()
-                        .status(hyper::StatusCode::INTERNAL_SERVER_ERROR)
-                        .text("Internal Server Error"))
+                    Ok(crate::error::AppError::Internal(e.to_string())
+                        .response_with_request_id(Some(&request_id)))
                 }
             }
             Err(_panic_err) => {
-                // Handle unwound thread Panics efficiently
-                tracing::error!("A handler thread panicked during execution!");
+                tracing::error!(request_id = %request_id, "A handler thread panicked during execution!");
                 if let Some(handler) = &self.error_handler {
                     Ok(handler("Internal thread panic".into()))
                 } else {
-                    Ok(Response::new()
-                        .status(hyper::StatusCode::INTERNAL_SERVER_ERROR)
-                        .text("500 Internal Server Error (Panic Recovery)"))
+                    Ok(
+                        crate::error::AppError::Internal("handler panic".to_string())
+                            .response_with_request_id(Some(&request_id)),
+                    )
                 }
             }
         }
@@ -210,6 +214,35 @@ mod tests {
 
         let response = app.handle(req).await.unwrap();
         assert_eq!(response.status, hyper::StatusCode::OK);
+    }
+
+    #[tokio::test]
+    async fn app_maps_typed_errors_to_structured_responses() {
+        let router = Router::new().get("/fail", |_req: Request| async {
+            Err::<Response, Box<dyn std::error::Error + Send + Sync>>(Box::new(
+                crate::error::AppError::Validation("invalid title".to_string()),
+            ))
+        });
+        let app = App::new().router(router);
+        let req = Request::from_hyper(
+            hyper::Request::builder()
+                .method("GET")
+                .uri("/fail")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+        let request_id = req.request_id.clone();
+
+        let response = app.handle(req).await.unwrap();
+        let body = hyper::body::to_bytes(response.body).await.unwrap();
+        let document: serde_json::Value = serde_json::from_slice(&body).unwrap();
+
+        assert_eq!(response.status, hyper::StatusCode::BAD_REQUEST);
+        assert_eq!(response.headers.get("X-Request-ID"), Some(&request_id));
+        assert_eq!(document["error"]["code"], "VALIDATION_ERROR");
+        assert_eq!(document["error"]["message"], "invalid title");
     }
 
     #[tokio::test]

@@ -39,7 +39,7 @@ pub mod dev;
 pub use app::App;
 pub use config::Settings;
 pub use database::Database;
-pub use error::{AppError, AppResult};
+pub use error::{AppError, AppResult, ErrorCode, ErrorDetails, ErrorDocument};
 pub use handler::Handler;
 pub use middleware::Middleware;
 pub use request::Request;
