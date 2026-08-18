@@ -148,6 +148,7 @@ pub mod query_client;
 pub mod queue;
 pub mod testing;
 pub mod tracing_context;
+pub mod typegen;
 
 // Optional dev module for development utilities
 #[cfg(feature = "dev")]
@@ -328,6 +329,7 @@ pub use tenant::{TenantContext, TenantError, TenantId, TenantQuota, TenantResolv
 pub use testing::{TestClient, TestResponse};
 pub use tracing_context::{Sampler, Span, SpanEvent, TraceContext};
 pub use transaction::{Transaction, TransactionError, TransactionState};
+pub use typegen::{FieldType, TypeGenerator, TypeSchema, TypegenError};
 
 // File upload exports
 pub use file_upload::{parse_multipart, FileUpload};
