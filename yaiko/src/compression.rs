@@ -1,11 +1,17 @@
-use crate::{Request, Response, Handler, Middleware};
+use crate::{Handler, Middleware, Request, Response};
+use async_compression::tokio::write::{BrotliEncoder, GzipEncoder};
 use async_trait::async_trait;
-use async_compression::tokio::write::{GzipEncoder, BrotliEncoder};
-use tokio::io::AsyncWriteExt;
 use std::sync::Arc;
+use tokio::io::AsyncWriteExt;
 
 pub struct CompressionMiddleware {
     min_size: usize,
+}
+
+impl Default for CompressionMiddleware {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl CompressionMiddleware {
@@ -20,9 +26,13 @@ impl CompressionMiddleware {
         self
     }
 
-    async fn compress_response(&self, response: Response, encoding: &str) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
+    async fn compress_response(
+        &self,
+        response: Response,
+        encoding: &str,
+    ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
         let body_bytes = hyper::body::to_bytes(response.body).await?;
-        
+
         if body_bytes.len() < self.min_size {
             return Ok(Response {
                 status: response.status,
@@ -44,11 +54,13 @@ impl CompressionMiddleware {
                 encoder.shutdown().await?;
                 encoder.into_inner()
             }
-            _ => return Ok(Response {
-                status: response.status,
-                headers: response.headers,
-                body: hyper::Body::from(body_bytes),
-            }),
+            _ => {
+                return Ok(Response {
+                    status: response.status,
+                    headers: response.headers,
+                    body: hyper::Body::from(body_bytes),
+                })
+            }
         };
 
         let mut headers = response.headers;
@@ -70,7 +82,8 @@ impl Middleware for CompressionMiddleware {
         req: Request,
         next: Arc<dyn Handler>,
     ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
-        let accept_encoding = req.headers
+        let accept_encoding = req
+            .headers
             .get("accept-encoding")
             .and_then(|v| v.to_str().ok())
             .unwrap_or("")

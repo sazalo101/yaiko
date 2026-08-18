@@ -41,31 +41,38 @@ impl RobotsTxt {
 
     pub fn render(&self) -> String {
         let mut content = format!("User-agent: {}\n", self.user_agent);
-        
+
         for path in &self.allow {
             content.push_str(&format!("Allow: {}\n", path));
         }
-        
+
         for path in &self.disallow {
             content.push_str(&format!("Disallow: {}\n", path));
         }
-        
+
         if let Some(ref sitemap) = self.sitemap_url {
             content.push_str(&format!("Sitemap: {}\n", sitemap));
         }
-        
+
         content
     }
 
-    pub fn handler(&self) -> impl Fn(Request) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<Response, Box<dyn std::error::Error + Send + Sync>>> + Send>> + Clone {
+    #[allow(clippy::type_complexity)]
+    pub fn handler(
+        &self,
+    ) -> impl Fn(
+        Request,
+    ) -> std::pin::Pin<
+        Box<
+            dyn std::future::Future<
+                    Output = Result<Response, Box<dyn std::error::Error + Send + Sync>>,
+                > + Send,
+        >,
+    > + Clone {
         let content = self.render();
         move |_req| {
             let content = content.clone();
-            Box::pin(async move {
-                Ok(Response::new()
-                    .text(&content)
-                    .status(StatusCode::OK))
-            })
+            Box::pin(async move { Ok(Response::new().text(&content).status(StatusCode::OK)) })
         }
     }
 }
@@ -115,6 +122,7 @@ impl Sitemap {
         }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn add(mut self, url: SitemapUrl) -> Self {
         self.urls.push(url);
         self
@@ -126,14 +134,16 @@ impl Sitemap {
     }
 
     pub fn render(&self) -> String {
-        let mut xml = String::from(r#"<?xml version="1.0" encoding="UTF-8"?>
+        let mut xml = String::from(
+            r#"<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-"#);
+"#,
+        );
 
         for url in &self.urls {
             xml.push_str("  <url>\n");
             xml.push_str(&format!("    <loc>{}{}</loc>\n", self.base_url, url.loc));
-            
+
             if let Some(ref lastmod) = url.lastmod {
                 xml.push_str(&format!("    <lastmod>{}</lastmod>\n", lastmod));
             }
@@ -143,7 +153,7 @@ impl Sitemap {
             if let Some(priority) = url.priority {
                 xml.push_str(&format!("    <priority>{:.1}</priority>\n", priority));
             }
-            
+
             xml.push_str("  </url>\n");
         }
 
@@ -151,7 +161,18 @@ impl Sitemap {
         xml
     }
 
-    pub fn handler(&self) -> impl Fn(Request) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<Response, Box<dyn std::error::Error + Send + Sync>>> + Send>> + Clone {
+    #[allow(clippy::type_complexity)]
+    pub fn handler(
+        &self,
+    ) -> impl Fn(
+        Request,
+    ) -> std::pin::Pin<
+        Box<
+            dyn std::future::Future<
+                    Output = Result<Response, Box<dyn std::error::Error + Send + Sync>>,
+                > + Send,
+        >,
+    > + Clone {
         let content = self.render();
         move |_req| {
             let content = content.clone();

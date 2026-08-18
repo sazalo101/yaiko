@@ -1,10 +1,13 @@
-use crate::{Router, Request, Response, Handler, static_files::StaticFiles, template::TemplateEngine};
+use crate::{
+    static_files::StaticFiles, template::TemplateEngine, Handler, Request, Response, Router,
+};
 use async_trait::async_trait;
-use std::sync::Arc;
-use std::panic::AssertUnwindSafe;
 use futures::FutureExt;
+use std::panic::AssertUnwindSafe;
+use std::sync::Arc;
 
-pub type ErrorHandlerFn = Arc<dyn Fn(Box<dyn std::error::Error + Send + Sync>) -> Response + Send + Sync>;
+pub type ErrorHandlerFn =
+    Arc<dyn Fn(Box<dyn std::error::Error + Send + Sync>) -> Response + Send + Sync>;
 pub type NotFoundHandlerFn = Arc<dyn Fn(Request) -> Response + Send + Sync>;
 
 pub struct App {
@@ -13,6 +16,12 @@ pub struct App {
     pub template_engine: Option<Arc<tokio::sync::RwLock<TemplateEngine>>>,
     error_handler: Option<ErrorHandlerFn>,
     not_found_handler: Option<NotFoundHandlerFn>,
+}
+
+impl Default for App {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl App {
@@ -60,7 +69,10 @@ impl App {
 
 #[async_trait]
 impl Handler for App {
-    async fn handle(&self, req: Request) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
+    async fn handle(
+        &self,
+        req: Request,
+    ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
         if let Some(static_handler) = &self.static_handler {
             if static_handler.matches(req.uri.path()) {
                 return static_handler.handle(req).await;
@@ -68,16 +80,16 @@ impl Handler for App {
         }
 
         let not_found_handler = self.not_found_handler.clone();
-        
+
         // Capture request info before routing consumes it (for potential 404 handler)
         let not_found_req_uri = req.uri.clone();
         let not_found_req_method = req.method.clone();
         let not_found_req_headers = req.headers.clone();
 
         // Wrap the core routing logic inside catch_unwind
-        let result = AssertUnwindSafe(async {
-            self.router.handle_request(req).await
-        }).catch_unwind().await;
+        let result = AssertUnwindSafe(async { self.router.handle_request(req).await })
+            .catch_unwind()
+            .await;
 
         match result {
             Ok(Ok(res)) => {
@@ -85,13 +97,19 @@ impl Handler for App {
                 if res.status == hyper::StatusCode::NOT_FOUND {
                     if not_found_req_uri.path() == "/robots.txt" {
                         let site_url = std::env::var("SITE_URL").unwrap_or_else(|_| {
-                            if let Some(host) = not_found_req_headers.get("host").and_then(|h| h.to_str().ok()) {
+                            if let Some(host) = not_found_req_headers
+                                .get("host")
+                                .and_then(|h| h.to_str().ok())
+                            {
                                 format!("https://{}", host)
                             } else {
                                 "http://localhost:3000".to_string()
                             }
                         });
-                        let content = format!("User-agent: *\nAllow: /\nSitemap: {}/sitemap.xml\n", site_url.trim_end_matches('/'));
+                        let content = format!(
+                            "User-agent: *\nAllow: /\nSitemap: {}/sitemap.xml\n",
+                            site_url.trim_end_matches('/')
+                        );
                         return Ok(Response::new()
                             .header("Content-Type", "text/plain; charset=utf-8")
                             .text(&content));
@@ -99,14 +117,18 @@ impl Handler for App {
 
                     if not_found_req_uri.path() == "/sitemap.xml" {
                         let site_url = std::env::var("SITE_URL").unwrap_or_else(|_| {
-                            if let Some(host) = not_found_req_headers.get("host").and_then(|h| h.to_str().ok()) {
+                            if let Some(host) = not_found_req_headers
+                                .get("host")
+                                .and_then(|h| h.to_str().ok())
+                            {
                                 format!("https://{}", host)
                             } else {
                                 "http://localhost:3000".to_string()
                             }
                         });
                         let base = site_url.trim_end_matches('/');
-                        let content = format!(r#"<?xml version="1.0" encoding="UTF-8"?>
+                        let content = format!(
+                            r#"<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>{}/</loc>
@@ -114,7 +136,9 @@ impl Handler for App {
     <priority>1.0</priority>
   </url>
 </urlset>
-"#, base);
+"#,
+                            base
+                        );
                         return Ok(Response::new()
                             .header("Content-Type", "application/xml; charset=utf-8")
                             .body(hyper::Body::from(content)));
@@ -129,12 +153,14 @@ impl Handler for App {
                             builder = builder.header(key, value);
                         }
                         let hyper_req = builder.body(hyper::Body::empty()).unwrap();
-                        let actual_req = Request::from_hyper_with_addr(hyper_req, None).await.unwrap();
+                        let actual_req = Request::from_hyper_with_addr(hyper_req, None)
+                            .await
+                            .unwrap();
                         return Ok(handler(actual_req));
                     }
                 }
                 Ok(res)
-            },
+            }
             Ok(Err(e)) => {
                 // Handle natural framework Errors
                 if let Some(handler) = &self.error_handler {
@@ -144,7 +170,7 @@ impl Handler for App {
                         .status(hyper::StatusCode::INTERNAL_SERVER_ERROR)
                         .text("Internal Server Error"))
                 }
-            },
+            }
             Err(_panic_err) => {
                 // Handle unwound thread Panics efficiently
                 tracing::error!("A handler thread panicked during execution!");

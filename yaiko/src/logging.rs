@@ -42,7 +42,11 @@ impl Middleware for LoggingMiddleware {
         let start = Instant::now();
         let method = req.method.clone();
         let path = req.uri.path().to_string();
-        let query = req.uri.query().map(|q| format!("?{}", q)).unwrap_or_default();
+        let query = req
+            .uri
+            .query()
+            .map(|q| format!("?{}", q))
+            .unwrap_or_default();
 
         // Log request
         tracing::info!(
@@ -56,7 +60,7 @@ impl Middleware for LoggingMiddleware {
         let result = next.handle(req).await;
 
         let duration = start.elapsed();
-        
+
         match &result {
             Ok(response) => {
                 let status = response.status.as_u16();
@@ -94,17 +98,16 @@ impl Middleware for LoggingMiddleware {
 }
 
 /// Initialize tracing with a default subscriber
-/// 
+///
 /// Call this at the start of your application:
 /// ```rust
 /// yaiko_core::init_tracing();
 /// ```
 pub fn init_tracing() {
     use tracing_subscriber::{fmt, EnvFilter};
-    
-    let filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new("info"));
-    
+
+    let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
+
     fmt()
         .with_env_filter(filter)
         .with_target(true)

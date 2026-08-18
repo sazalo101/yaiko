@@ -1,5 +1,5 @@
-use crate::{Handler, Middleware, Request, Response};
 use crate::session::SessionHandle;
+use crate::{Handler, Middleware, Request, Response};
 use async_trait::async_trait;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
@@ -204,12 +204,10 @@ pub fn require_role(req: &Request, role: &str) -> Result<(), Response> {
     if req.user_roles.iter().any(|existing| existing == role) {
         Ok(())
     } else {
-        Err(
-            Response::new()
-                .status(hyper::StatusCode::FORBIDDEN)
-                .json(&serde_json::json!({ "error": "Forbidden" }))
-                .expect("failed to serialize forbidden response"),
-        )
+        Err(Response::new()
+            .status(hyper::StatusCode::FORBIDDEN)
+            .json(&serde_json::json!({ "error": "Forbidden" }))
+            .expect("failed to serialize forbidden response"))
     }
 }
 
@@ -245,7 +243,10 @@ mod tests {
         )
         .await
         .unwrap();
-        let login_response = session_middleware.handle(login_req, login_handler).await.unwrap();
+        let login_response = session_middleware
+            .handle(login_req, login_handler)
+            .await
+            .unwrap();
         let cookie = login_response.headers.get("Set-Cookie").unwrap().clone();
 
         let protected_handler = Arc::new(|req: Request| async move {
@@ -264,11 +265,14 @@ mod tests {
         let auth = auth_middleware.clone();
         let protected = protected_handler.clone();
         let hydrated = session_middleware
-            .handle(protected_req, Arc::new(move |req: Request| {
-                let auth = auth.clone();
-                let protected = protected.clone();
-                async move { auth.handle(req, protected).await }
-            }))
+            .handle(
+                protected_req,
+                Arc::new(move |req: Request| {
+                    let auth = auth.clone();
+                    let protected = protected.clone();
+                    async move { auth.handle(req, protected).await }
+                }),
+            )
             .await
             .unwrap();
 

@@ -142,16 +142,19 @@ pub trait SessionStore: Send + Sync {
         &self,
         id: &str,
     ) -> Result<Option<Session>, Box<dyn std::error::Error + Send + Sync>>;
-    async fn set(
-        &self,
-        session: Session,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    async fn set(&self, session: Session) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
     async fn delete(&self, id: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
     async fn cleanup(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
 }
 
 pub struct MemorySessionStore {
     sessions: Arc<tokio::sync::RwLock<HashMap<String, Session>>>,
+}
+
+impl Default for MemorySessionStore {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl MemorySessionStore {
@@ -172,10 +175,7 @@ impl SessionStore for MemorySessionStore {
         Ok(sessions.get(id).cloned())
     }
 
-    async fn set(
-        &self,
-        session: Session,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn set(&self, session: Session) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let mut sessions = self.sessions.write().await;
         sessions.insert(session.id.clone(), session);
         Ok(())
@@ -246,9 +246,8 @@ impl SessionMiddleware {
     }
 
     fn cookie_is_secure(&self) -> bool {
-        self.secure_cookies.unwrap_or_else(|| {
-            std::env::var("APP_ENV").unwrap_or_default() == "production"
-        })
+        self.secure_cookies
+            .unwrap_or_else(|| std::env::var("APP_ENV").unwrap_or_default() == "production")
     }
 
     fn session_cookie(&self, session: &Session) -> Cookie<'static> {
@@ -281,16 +280,14 @@ impl Middleware for SessionMiddleware {
         mut req: Request,
         next: Arc<dyn crate::Handler>,
     ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
-        let incoming_session_id = req
-            .header("cookie")
-            .and_then(|cookie_header| {
-                cookie_header.split(';').find_map(|cookie| {
-                    Cookie::parse(cookie.trim())
-                        .ok()
-                        .filter(|parsed| parsed.name() == self.cookie_name)
-                        .map(|parsed| parsed.value().to_string())
-                })
-            });
+        let incoming_session_id = req.header("cookie").and_then(|cookie_header| {
+            cookie_header.split(';').find_map(|cookie| {
+                Cookie::parse(cookie.trim())
+                    .ok()
+                    .filter(|parsed| parsed.name() == self.cookie_name)
+                    .map(|parsed| parsed.value().to_string())
+            })
+        });
 
         let loaded_session = if let Some(id) = incoming_session_id.as_deref() {
             match self.store.get(id).await? {
@@ -386,7 +383,11 @@ mod tests {
         let middleware = SessionMiddleware::new(store.clone()).secure(false);
 
         let login = Arc::new(|req: Request| async move {
-            req.session.as_ref().unwrap().set("user_id", "abc123").unwrap();
+            req.session
+                .as_ref()
+                .unwrap()
+                .set("user_id", "abc123")
+                .unwrap();
             Ok(Response::new().status(StatusCode::OK))
         });
         let first_req = Request::from_hyper(

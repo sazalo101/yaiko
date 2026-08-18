@@ -35,22 +35,28 @@ impl Response {
 
     pub fn json<T: Serialize>(mut self, data: &T) -> Result<Self, serde_json::Error> {
         let json_str = serde_json::to_string(data)?;
-        self.headers.insert("Content-Length".to_string(), json_str.len().to_string());
-        self.headers.insert("Content-Type".to_string(), "application/json".to_string());
+        self.headers
+            .insert("Content-Length".to_string(), json_str.len().to_string());
+        self.headers
+            .insert("Content-Type".to_string(), "application/json".to_string());
         self.body = Body::from(json_str);
         Ok(self)
     }
 
     pub fn text(mut self, text: &str) -> Self {
-        self.headers.insert("Content-Length".to_string(), text.len().to_string());
-        self.headers.insert("Content-Type".to_string(), "text/plain".to_string());
+        self.headers
+            .insert("Content-Length".to_string(), text.len().to_string());
+        self.headers
+            .insert("Content-Type".to_string(), "text/plain".to_string());
         self.body = Body::from(text.to_string());
         self
     }
 
     pub fn html(mut self, html: &str) -> Self {
-        self.headers.insert("Content-Length".to_string(), html.len().to_string());
-        self.headers.insert("Content-Type".to_string(), "text/html".to_string());
+        self.headers
+            .insert("Content-Length".to_string(), html.len().to_string());
+        self.headers
+            .insert("Content-Type".to_string(), "text/html".to_string());
         self.body = Body::from(html.to_string());
         self
     }
@@ -62,7 +68,8 @@ impl Response {
 
     pub fn redirect(mut self, location: &str) -> Self {
         self.status = StatusCode::FOUND;
-        self.headers.insert("Location".to_string(), location.to_string());
+        self.headers
+            .insert("Location".to_string(), location.to_string());
         self
     }
 
@@ -78,7 +85,8 @@ impl Response {
     /// 301 Moved Permanently redirect
     pub fn redirect_permanent(mut self, location: &str) -> Self {
         self.status = StatusCode::MOVED_PERMANENTLY;
-        self.headers.insert("Location".to_string(), location.to_string());
+        self.headers
+            .insert("Location".to_string(), location.to_string());
         self
     }
 
@@ -89,7 +97,8 @@ impl Response {
     {
         let stream = tokio_util::io::ReaderStream::new(reader);
         self.body = Body::wrap_stream(stream);
-        self.headers.insert("Transfer-Encoding".to_string(), "chunked".to_string());
+        self.headers
+            .insert("Transfer-Encoding".to_string(), "chunked".to_string());
         self
     }
 
@@ -99,24 +108,28 @@ impl Response {
         tokio::spawn(async move {
             while let Some(event) = rx.recv().await {
                 let formatted = format!("data: {}\n\n", event);
-                if sender.send_data(hyper::body::Bytes::from(formatted)).await.is_err() {
+                if sender
+                    .send_data(hyper::body::Bytes::from(formatted))
+                    .await
+                    .is_err()
+                {
                     break;
                 }
             }
         });
         self.body = body;
-        self.headers.insert("Content-Type".to_string(), "text/event-stream".to_string());
-        self.headers.insert("Cache-Control".to_string(), "no-cache".to_string());
-        self.headers.insert("Connection".to_string(), "keep-alive".to_string());
+        self.headers
+            .insert("Content-Type".to_string(), "text/event-stream".to_string());
+        self.headers
+            .insert("Cache-Control".to_string(), "no-cache".to_string());
+        self.headers
+            .insert("Connection".to_string(), "keep-alive".to_string());
         self
     }
 
     /// Set a cookie with common options
     pub fn set_cookie(self, name: &str, value: &str) -> Self {
-        let cookie = format!(
-            "{}={}; Path=/; HttpOnly; SameSite=Lax",
-            name, value
-        );
+        let cookie = format!("{}={}; Path=/; HttpOnly; SameSite=Lax", name, value);
         self.set_cookie_raw(&cookie)
     }
 
@@ -135,7 +148,7 @@ impl Response {
 
     pub fn into_hyper(self) -> HyperResponse<Body> {
         let mut response = HyperResponse::builder().status(self.status);
-        
+
         for (key, value) in self.headers {
             if key.eq_ignore_ascii_case("set-cookie") {
                 for cookie in value.split(Self::SET_COOKIE_SEPARATOR) {
@@ -145,7 +158,7 @@ impl Response {
                 response = response.header(key, value);
             }
         }
-        
+
         response.body(self.body).unwrap()
     }
 }

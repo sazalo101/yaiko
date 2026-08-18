@@ -2,75 +2,101 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  core:
+    name: yaiko-core (${{ matrix.features }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - features: default
+            command: cargo test --manifest-path yaiko/Cargo.toml
+          - features: sqlite-only
+            command: cargo check --manifest-path yaiko/Cargo.toml --no-default-features --features sqlite
+          - features: postgres-only
+            command: cargo check --manifest-path yaiko/Cargo.toml --no-default-features --features postgres
+          - features: sqlite-postgres
+            command: cargo check --manifest-path yaiko/Cargo.toml --no-default-features --features sqlite,postgres
+          - features: all
+            command: cargo test --manifest-path yaiko/Cargo.toml --all-features
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ matrix.features }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.features }}-
+            ${{ runner.os }}-cargo-
+
+      - name: Run feature-matrix command
+        run: ${{ matrix.command }}
+
+  quality:
+    name: format and clippy
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install Rust
-      uses: dtolnay/rust-action@stable
-      
-    - name: Cache cargo
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        
-    - name: Build yaiko-core
-      run: cargo build --manifest-path yaiko/Cargo.toml
-      
-    - name: Run tests
-      run: cargo test --manifest-path yaiko/Cargo.toml
-      
-    - name: Build CLI
-      run: cargo build --manifest-path yaiko-cli/Cargo.toml
+      - uses: actions/checkout@v4
 
-    - name: Verify generated scaffold
-      run: |
-        cargo run --manifest-path yaiko-cli/Cargo.toml -- init ci-smoke-app --database sqlite
-        cargo check --manifest-path ci-smoke-app/Cargo.toml
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
 
-    - name: Check formatting
-      run: cargo fmt --manifest-path yaiko/Cargo.toml -- --check
-      continue-on-error: true
-      
-    - name: Clippy
-      run: cargo clippy --manifest-path yaiko/Cargo.toml -- -D warnings
-      continue-on-error: true
+      - name: Check formatting
+        run: cargo fmt --manifest-path yaiko/Cargo.toml -- --check
+
+      - name: Run clippy
+        run: cargo clippy --manifest-path yaiko/Cargo.toml --all-features --all-targets -- -D warnings
+
+  cli:
+    name: CLI and scaffold
+    runs-on: ubuntu-latest
+    needs: core
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Build CLI
+        run: cargo build --manifest-path yaiko-cli/Cargo.toml
+
+      - name: Verify generated SQLite scaffold
+        run: |
+          cargo run --manifest-path yaiko-cli/Cargo.toml -- init ci-smoke-app --database sqlite
+          cargo check --manifest-path ci-smoke-app/Cargo.toml
 
   examples:
+    name: examples
     runs-on: ubuntu-latest
-    needs: build
+    needs: core
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install Rust
-      uses: dtolnay/rust-action@stable
-      
-    - name: Build blog example
-      run: cargo build --manifest-path examples/blog/Cargo.toml
-      
-    - name: Build notes example
-      run: cargo build --manifest-path examples/notes/Cargo.toml
-      
-    - name: Build chat example
-      run: cargo build --manifest-path examples/chat/Cargo.toml
+      - uses: actions/checkout@v4
 
-    - name: Build auth example
-      run: cargo build --manifest-path examples/auth/Cargo.toml
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
 
-    - name: Build link-in-bio example
-      run: cargo build --manifest-path examples/link-in-bio/Cargo.toml
+      - name: Build representative examples
+        run: |
+          cargo build --manifest-path examples/blog/Cargo.toml
+          cargo build --manifest-path examples/notes/Cargo.toml
+          cargo build --manifest-path examples/chat/Cargo.toml
+          cargo build --manifest-path examples/auth/Cargo.toml
+          cargo build --manifest-path examples/link-in-bio/Cargo.toml

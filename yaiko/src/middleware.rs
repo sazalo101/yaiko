@@ -1,4 +1,4 @@
-use crate::{Request, Response, Handler};
+use crate::{Handler, Request, Response};
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -25,12 +25,15 @@ impl Middleware for Logger {
         let method = req.method.clone();
         let uri = req.uri.clone();
         let request_id = req.request_id.clone();
-        
+
         let response = next.handle(req).await?;
-        
+
         let duration = start.elapsed();
-        println!("[{}] {} {} {} - {:?}", request_id, method, uri, response.status, duration);
-        
+        println!(
+            "[{}] {} {} {} - {:?}",
+            request_id, method, uri, response.status, duration
+        );
+
         Ok(response)
     }
 }
@@ -41,6 +44,12 @@ pub struct Cors {
     allow_methods: String,
     allow_headers: String,
     max_age: Option<u32>,
+}
+
+impl Default for Cors {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Cors {
@@ -87,7 +96,7 @@ impl Middleware for Cors {
                 .header("Access-Control-Allow-Methods", &self.allow_methods)
                 .header("Access-Control-Allow-Headers", &self.allow_headers)
                 .status(hyper::StatusCode::OK);
-            
+
             if let Some(age) = self.max_age {
                 res = res.header("Access-Control-Max-Age", &age.to_string());
             }
@@ -95,7 +104,10 @@ impl Middleware for Cors {
         }
 
         let mut response = next.handle(req).await?;
-        response.headers.insert("Access-Control-Allow-Origin".to_string(), self.allow_origin.clone());
+        response.headers.insert(
+            "Access-Control-Allow-Origin".to_string(),
+            self.allow_origin.clone(),
+        );
         Ok(response)
     }
 }
@@ -185,7 +197,8 @@ impl Middleware for ETag {
         req: Request,
         next: Arc<dyn Handler>,
     ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
-        let if_none_match = req.headers
+        let if_none_match = req
+            .headers
             .get(hyper::header::IF_NONE_MATCH)
             .and_then(|h| h.to_str().ok())
             .map(|s| s.to_string());
@@ -198,13 +211,13 @@ impl Middleware for ETag {
             for (k, v) in response.headers.drain() {
                 final_res.headers.insert(k, v);
             }
-            
+
             // Read body to compute hash
             if let Ok(body_bytes) = hyper::body::to_bytes(response.body).await {
                 if !body_bytes.is_empty() {
                     let hash_str = sha1_smol::Sha1::from(&body_bytes).digest().to_string();
                     let hash = format!("\"{}\"", hash_str);
-                    
+
                     if let Some(client_hash) = if_none_match {
                         if client_hash == hash {
                             // Client has the same version mapped, reply 304 without payload
@@ -219,14 +232,14 @@ impl Middleware for ETag {
                     final_res.body = hyper::Body::from(body_bytes);
                     return Ok(final_res);
                 }
-                
+
                 // If it reached here but didn't match ETag, we need to rebuild the original response
                 final_res.body = hyper::Body::from(body_bytes);
                 return Ok(final_res);
             }
             return Ok(final_res);
         }
-        
+
         // Return untouched if rules don't match (e.g. wasn't a success)
         Ok(response)
     }

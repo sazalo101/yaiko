@@ -1,6 +1,5 @@
-
-use crate::{Request, Response, Handler, Middleware};
 use crate::static_files::StaticFiles;
+use crate::{Handler, Middleware, Request, Response};
 use async_trait::async_trait;
 use hyper::Method;
 use regex::Regex;
@@ -89,7 +88,6 @@ impl Route {
     }
 
     pub fn matches_path(&self, path: &str) -> Option<HashMap<String, String>> {
-
         if let Some(captures) = self.regex.captures(path) {
             let mut params = HashMap::new();
             for (i, param_name) in self.param_names.iter().enumerate() {
@@ -112,6 +110,12 @@ pub struct Router {
     pub static_prefix: Option<String>,
 }
 
+impl Default for Router {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Router {
     pub fn new() -> Self {
         Router {
@@ -126,7 +130,8 @@ impl Router {
     where
         H: Handler + 'static,
     {
-        self.routes.push(Route::new(Method::GET, path, Arc::new(handler)));
+        self.routes
+            .push(Route::new(Method::GET, path, Arc::new(handler)));
         self
     }
 
@@ -134,7 +139,8 @@ impl Router {
     where
         H: Handler + 'static,
     {
-        self.routes.push(Route::new(Method::POST, path, Arc::new(handler)));
+        self.routes
+            .push(Route::new(Method::POST, path, Arc::new(handler)));
         self
     }
 
@@ -142,7 +148,8 @@ impl Router {
     where
         H: Handler + 'static,
     {
-        self.routes.push(Route::new(Method::PUT, path, Arc::new(handler)));
+        self.routes
+            .push(Route::new(Method::PUT, path, Arc::new(handler)));
         self
     }
 
@@ -150,7 +157,8 @@ impl Router {
     where
         H: Handler + 'static,
     {
-        self.routes.push(Route::new(Method::DELETE, path, Arc::new(handler)));
+        self.routes
+            .push(Route::new(Method::DELETE, path, Arc::new(handler)));
         self
     }
 
@@ -158,7 +166,8 @@ impl Router {
     where
         H: Handler + 'static,
     {
-        self.routes.push(Route::new(Method::PATCH, path, Arc::new(handler)));
+        self.routes
+            .push(Route::new(Method::PATCH, path, Arc::new(handler)));
         self
     }
 
@@ -166,7 +175,8 @@ impl Router {
     where
         H: Handler + 'static,
     {
-        self.routes.push(Route::new(Method::OPTIONS, path, Arc::new(handler)));
+        self.routes
+            .push(Route::new(Method::OPTIONS, path, Arc::new(handler)));
         self
     }
 
@@ -174,12 +184,13 @@ impl Router {
     where
         H: Handler + 'static,
     {
-        self.routes.push(Route::new(Method::HEAD, path, Arc::new(handler)));
+        self.routes
+            .push(Route::new(Method::HEAD, path, Arc::new(handler)));
         self
     }
 
     /// Mount static files from a directory at a URL prefix
-    /// 
+    ///
     /// # Example
     /// ```rust
     /// use yaiko_core::Router;
@@ -209,71 +220,102 @@ impl Router {
         if prefix.is_empty() {
             prefix = "/".to_string();
         }
-        
+
         let path_pattern = format!("{}/*", prefix);
         // We mount it for all common methods
-        for method in [Method::GET, Method::POST, Method::PUT, Method::DELETE, Method::PATCH, Method::OPTIONS, Method::HEAD] {
+        for method in [
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+            Method::PATCH,
+            Method::OPTIONS,
+            Method::HEAD,
+        ] {
             let handler = Arc::new(router.clone());
-            self.routes.push(Route::mounted(method.clone(), &prefix, handler.clone(), &prefix));
-            self.routes.push(Route::mounted(method, &path_pattern, handler, &prefix));
+            self.routes.push(Route::mounted(
+                method.clone(),
+                &prefix,
+                handler.clone(),
+                &prefix,
+            ));
+            self.routes
+                .push(Route::mounted(method, &path_pattern, handler, &prefix));
         }
         self
     }
 
-    pub async fn handle_request(&self, mut req: Request) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn handle_request(
+        &self,
+        mut req: Request,
+    ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
         let mut original_path = req.uri.path().trim_end_matches('/').to_string();
         if original_path.is_empty() {
             original_path = "/".to_string();
         }
         let target_method = req.method.clone();
-        
+
         // Track allowed methods for 405 Method Not Allowed / OPTIONS fallbacks
         let mut allowed_methods = Vec::new();
         let mut found_match = false;
-        
+
         // Find matching route
         for route in &self.routes {
             if let Some(params) = route.matches_path(&original_path) {
                 found_match = true;
                 allowed_methods.push(route.method.as_str().to_string());
-                
+
                 // Allow exact method match OR auto-resolve HEAD requests to GET routes
-                if route.method == target_method || (target_method == Method::HEAD && route.method == Method::GET) {
+                if route.method == target_method
+                    || (target_method == Method::HEAD && route.method == Method::GET)
+                {
                     req.params = params;
-                
-                // If it's a mount route (ends with /*), we need to strip the prefix for the sub-router
-                if let Some(prefix) = &route.strip_prefix {
-                    let mut new_path = original_path.strip_prefix(prefix).unwrap_or(&original_path).to_string();
-                    if new_path.is_empty() {
-                        new_path = "/".to_string();
-                    }
-                    
-                    // Replace the URI path but keep query params
-                    let mut parts = req.uri.clone().into_parts();
-                    let path_and_query = match parts.path_and_query {
-                        Some(pq) => {
-                            if let Some(query) = pq.query() {
-                                hyper::http::uri::PathAndQuery::try_from(format!("{}?{}", new_path, query).as_str()).ok()
-                            } else {
+
+                    // If it's a mount route (ends with /*), we need to strip the prefix for the sub-router
+                    if let Some(prefix) = &route.strip_prefix {
+                        let mut new_path = original_path
+                            .strip_prefix(prefix)
+                            .unwrap_or(&original_path)
+                            .to_string();
+                        if new_path.is_empty() {
+                            new_path = "/".to_string();
+                        }
+
+                        // Replace the URI path but keep query params
+                        let mut parts = req.uri.clone().into_parts();
+                        let path_and_query = match parts.path_and_query {
+                            Some(pq) => {
+                                if let Some(query) = pq.query() {
+                                    hyper::http::uri::PathAndQuery::try_from(
+                                        format!("{}?{}", new_path, query).as_str(),
+                                    )
+                                    .ok()
+                                } else {
+                                    hyper::http::uri::PathAndQuery::try_from(new_path.as_str()).ok()
+                                }
+                            }
+                            None => {
                                 hyper::http::uri::PathAndQuery::try_from(new_path.as_str()).ok()
                             }
+                        };
+                        parts.path_and_query = path_and_query;
+                        if let Ok(new_uri) = hyper::Uri::from_parts(parts) {
+                            req.uri = new_uri;
                         }
-                        None => hyper::http::uri::PathAndQuery::try_from(new_path.as_str()).ok(),
-                    };
-                    parts.path_and_query = path_and_query;
-                    if let Ok(new_uri) = hyper::Uri::from_parts(parts) {
-                        req.uri = new_uri;
                     }
-                }
-                
-                // Apply middleware chain
-                let handler = route.handler.clone();
-                let final_handler = self.middleware.iter().rev().fold(handler, |next, middleware| {
-                    let middleware = middleware.clone();
-                    Arc::new(MiddlewareHandler { middleware, next })
-                });
-                
-                return final_handler.handle(req).await;
+
+                    // Apply middleware chain
+                    let handler = route.handler.clone();
+                    let final_handler =
+                        self.middleware
+                            .iter()
+                            .rev()
+                            .fold(handler, |next, middleware| {
+                                let middleware = middleware.clone();
+                                Arc::new(MiddlewareHandler { middleware, next })
+                            });
+
+                    return final_handler.handle(req).await;
                 }
             }
         }
@@ -322,14 +364,20 @@ struct MiddlewareHandler {
 
 #[async_trait]
 impl Handler for MiddlewareHandler {
-    async fn handle(&self, req: Request) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
+    async fn handle(
+        &self,
+        req: Request,
+    ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
         self.middleware.handle(req, self.next.clone()).await
     }
 }
 
 #[async_trait]
 impl Handler for Router {
-    async fn handle(&self, req: Request) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
+    async fn handle(
+        &self,
+        req: Request,
+    ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
         self.handle_request(req).await
     }
 }

@@ -1,4 +1,4 @@
-use crate::{Request, Response, Handler};
+use crate::{Handler, Request, Response};
 use async_trait::async_trait;
 use std::path::Path;
 use tokio::fs;
@@ -24,13 +24,16 @@ impl StaticFiles {
         &self.prefix
     }
 
-    async fn serve_file(&self, path: &str) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
+    async fn serve_file(
+        &self,
+        path: &str,
+    ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
         let relative_path = path.trim_start_matches('/');
         let mut file_path = Path::new(&self.dir).join(relative_path);
         if file_path.is_dir() {
             file_path = file_path.join("index.html");
         }
-        
+
         // Security check: prevent directory traversal
         let canonical_dir = std::fs::canonicalize(&self.dir)?;
         let canonical_file = match file_path.canonicalize() {
@@ -41,7 +44,7 @@ impl StaticFiles {
                     .text("File not found"));
             }
         };
-        
+
         if !canonical_file.starts_with(&canonical_dir) {
             return Ok(Response::new()
                 .status(hyper::StatusCode::FORBIDDEN)
@@ -53,7 +56,7 @@ impl StaticFiles {
                 let mime_type = mime_guess::from_path(&file_path)
                     .first_or_octet_stream()
                     .to_string();
-                
+
                 Ok(Response::new()
                     .header("Content-Type", &mime_type)
                     .header("Content-Length", &contents.len().to_string())
@@ -70,7 +73,10 @@ impl StaticFiles {
 
 #[async_trait]
 impl Handler for StaticFiles {
-    async fn handle(&self, req: Request) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
+    async fn handle(
+        &self,
+        req: Request,
+    ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
         let path = req.uri.path();
         if path.starts_with(&self.prefix) {
             let file_path = &path[self.prefix.len()..];

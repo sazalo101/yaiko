@@ -1,15 +1,17 @@
 use std::sync::Arc;
 
+use sqlx::Pool;
+
 #[cfg(feature = "postgres")]
-use sqlx::{Pool, Postgres};
+use sqlx::Postgres;
 
 #[cfg(feature = "sqlite")]
-use sqlx::{Pool, Sqlite};
+use sqlx::Sqlite;
 
 /// Database connection pool wrapper
-/// 
+///
 /// Supports both PostgreSQL and SQLite depending on enabled features.
-/// 
+///
 /// # Example (SQLite)
 /// ```rust,no_run
 /// # use yaiko_core::Database;
@@ -19,7 +21,7 @@ use sqlx::{Pool, Sqlite};
 /// # Ok(())
 /// # }
 /// ```
-/// 
+///
 /// # Example (PostgreSQL)
 /// ```rust,no_run
 /// # #[cfg(feature = "postgres")]
@@ -48,7 +50,7 @@ impl Database {
             .max_connections(10)
             .connect(database_url)
             .await?;
-        
+
         Ok(Database::Postgres(Arc::new(pool)))
     }
 
@@ -59,7 +61,7 @@ impl Database {
             .max_connections(5)
             .connect(database_url)
             .await?;
-        
+
         Ok(Database::Sqlite(Arc::new(pool)))
     }
 

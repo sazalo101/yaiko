@@ -1,5 +1,5 @@
-use crate::{App, Request};
 use crate::handler::Handler;
+use crate::{App, Request};
 use hyper::server::conn::AddrStream;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::Server as HyperServer;
@@ -22,7 +22,7 @@ impl Server {
 
     pub async fn run(self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let app = self.app.clone();
-        
+
         let make_svc = make_service_fn(move |conn: &AddrStream| {
             let app = app.clone();
             let remote_addr = conn.remote_addr();
@@ -45,9 +45,9 @@ impl Server {
                 tokio::signal::ctrl_c().await.ok();
                 println!("\nReceived shutdown signal, draining connections...");
             });
-        
+
         println!("Server running on http://{}", self.addr);
-        
+
         if let Err(e) = server.await {
             eprintln!("Server error: {}", e);
         }

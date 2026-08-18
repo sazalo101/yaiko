@@ -1,7 +1,7 @@
-pub mod common;
-pub mod init;
-pub mod dev;
 pub mod build;
-pub mod migrate;
-pub mod generate;
+pub mod common;
+pub mod dev;
 pub mod doctor;
+pub mod generate;
+pub mod init;
+pub mod migrate;

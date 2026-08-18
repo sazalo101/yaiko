@@ -22,7 +22,10 @@ impl Default for HealthCheck {
 
 #[async_trait]
 impl Handler for HealthCheck {
-    async fn handle(&self, _req: Request) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
+    async fn handle(
+        &self,
+        _req: Request,
+    ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
         Ok(Response::new()
             .status(hyper::StatusCode::OK)
             .header("Content-Type", "application/json")
@@ -33,6 +36,7 @@ impl Handler for HealthCheck {
 
 /// Detailed health check with custom checks
 pub struct DetailedHealthCheck {
+    #[allow(clippy::type_complexity)]
     checks: Vec<(&'static str, Box<dyn Fn() -> bool + Send + Sync>)>,
 }
 
@@ -59,7 +63,10 @@ impl Default for DetailedHealthCheck {
 
 #[async_trait]
 impl Handler for DetailedHealthCheck {
-    async fn handle(&self, _req: Request) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
+    async fn handle(
+        &self,
+        _req: Request,
+    ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
         let mut all_ok = true;
         let mut results = Vec::new();
 
@@ -68,7 +75,11 @@ impl Handler for DetailedHealthCheck {
             if !ok {
                 all_ok = false;
             }
-            results.push(format!(r#""{}":{}"#, name, if ok { "true" } else { "false" }));
+            results.push(format!(
+                r#""{}":{}"#,
+                name,
+                if ok { "true" } else { "false" }
+            ));
         }
 
         let status = if all_ok { "ok" } else { "degraded" };

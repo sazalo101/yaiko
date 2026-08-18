@@ -9,7 +9,8 @@ use std::sync::Arc;
 use tokio::sync::{Mutex, Notify};
 
 /// A boxed async function that can be stored in the queue
-pub type JobFn = Box<dyn Fn() -> Pin<Box<dyn Future<Output = Result<(), String>> + Send>> + Send + Sync>;
+pub type JobFn =
+    Box<dyn Fn() -> Pin<Box<dyn Future<Output = Result<(), String>> + Send>> + Send + Sync>;
 
 /// Background job processor
 pub struct JobQueue {
@@ -82,7 +83,7 @@ impl JobQueue {
     pub fn start(self: Arc<Self>) -> tokio::task::JoinHandle<()> {
         tokio::spawn(async move {
             *self.running.lock().await = true;
-            
+
             loop {
                 // Wait for notification or timeout
                 tokio::select! {
@@ -99,9 +100,9 @@ impl JobQueue {
                 let job = self.jobs.lock().await.pop_front();
                 if let Some(mut job) = job {
                     tracing::info!(job_name = %job.name, "Processing job");
-                    
+
                     let result = (job.task)().await;
-                    
+
                     match result {
                         Ok(()) => {
                             tracing::info!(job_name = %job.name, "Job completed successfully");
@@ -110,13 +111,14 @@ impl JobQueue {
                             job.retries += 1;
                             if job.retries < job.max_retries {
                                 tracing::warn!(
-                                    job_name = %job.name, 
+                                    job_name = %job.name,
                                     error = %e,
                                     retry = job.retries,
                                     "Job failed, retrying"
                                 );
                                 // Exponential backoff: 2^retries seconds
-                                let backoff = tokio::time::Duration::from_secs(2u64.pow(job.retries));
+                                let backoff =
+                                    tokio::time::Duration::from_secs(2u64.pow(job.retries));
                                 tokio::time::sleep(backoff).await;
                                 // Re-queue the job back
                                 self.jobs.lock().await.push_back(job);

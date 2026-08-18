@@ -23,19 +23,24 @@ impl TestClient {
 
     /// Add a Bearer token authorization header to all requests
     pub fn with_auth(mut self, token: &str) -> Self {
-        self.default_headers.insert("authorization".to_string(), format!("Bearer {}", token));
+        self.default_headers
+            .insert("authorization".to_string(), format!("Bearer {}", token));
         self
     }
 
     /// Inject a session cookie into all requests
     pub fn with_session(mut self, session_id: &str) -> Self {
-        self.default_headers.insert("cookie".to_string(), format!("yaiko_session={}", session_id));
+        self.default_headers.insert(
+            "cookie".to_string(),
+            format!("yaiko_session={}", session_id),
+        );
         self
     }
 
     /// Add a custom header to all requests
     pub fn with_header(mut self, key: &str, value: &str) -> Self {
-        self.default_headers.insert(key.to_string(), value.to_string());
+        self.default_headers
+            .insert(key.to_string(), value.to_string());
         self
     }
 
@@ -48,40 +53,52 @@ impl TestClient {
     pub async fn post(&self, path: &str, body: impl Into<String>) -> TestResponse {
         let mut headers = HashMap::new();
         headers.insert("content-type".to_string(), "application/json".to_string());
-        self.request(Method::POST, path, Some(body.into()), headers).await
+        self.request(Method::POST, path, Some(body.into()), headers)
+            .await
     }
 
     /// Make a PUT request with JSON body
     pub async fn put(&self, path: &str, body: impl Into<String>) -> TestResponse {
         let mut headers = HashMap::new();
         headers.insert("content-type".to_string(), "application/json".to_string());
-        self.request(Method::PUT, path, Some(body.into()), headers).await
+        self.request(Method::PUT, path, Some(body.into()), headers)
+            .await
     }
 
     /// Make a PATCH request with JSON body
     pub async fn patch(&self, path: &str, body: impl Into<String>) -> TestResponse {
         let mut headers = HashMap::new();
         headers.insert("content-type".to_string(), "application/json".to_string());
-        self.request(Method::PATCH, path, Some(body.into()), headers).await
+        self.request(Method::PATCH, path, Some(body.into()), headers)
+            .await
     }
 
     /// Make a DELETE request
     pub async fn delete(&self, path: &str) -> TestResponse {
-        self.request(Method::DELETE, path, None, HashMap::new()).await
+        self.request(Method::DELETE, path, None, HashMap::new())
+            .await
     }
 
     /// Make a POST request with URL-encoded form data
     pub async fn post_form(&self, path: &str, data: &HashMap<String, String>) -> TestResponse {
-        let encoded: String = data.iter()
-            .map(|(k, v)| format!("{}={}", 
-                percent_encoding::utf8_percent_encode(k, percent_encoding::NON_ALPHANUMERIC),
-                percent_encoding::utf8_percent_encode(v, percent_encoding::NON_ALPHANUMERIC),
-            ))
+        let encoded: String = data
+            .iter()
+            .map(|(k, v)| {
+                format!(
+                    "{}={}",
+                    percent_encoding::utf8_percent_encode(k, percent_encoding::NON_ALPHANUMERIC),
+                    percent_encoding::utf8_percent_encode(v, percent_encoding::NON_ALPHANUMERIC),
+                )
+            })
             .collect::<Vec<_>>()
             .join("&");
         let mut headers = HashMap::new();
-        headers.insert("content-type".to_string(), "application/x-www-form-urlencoded".to_string());
-        self.request(Method::POST, path, Some(encoded), headers).await
+        headers.insert(
+            "content-type".to_string(),
+            "application/x-www-form-urlencoded".to_string(),
+        );
+        self.request(Method::POST, path, Some(encoded), headers)
+            .await
     }
 
     /// Make a custom request
@@ -93,11 +110,9 @@ impl TestClient {
         headers: HashMap<String, String>,
     ) -> TestResponse {
         let uri: Uri = path.parse().expect("Invalid URI");
-        
-        let mut builder = hyper::Request::builder()
-            .method(method.clone())
-            .uri(uri);
-        
+
+        let mut builder = hyper::Request::builder().method(method.clone()).uri(uri);
+
         // Apply persistent default headers first
         for (key, value) in &self.default_headers {
             builder = builder.header(key.as_str(), value.as_str());
@@ -106,12 +121,12 @@ impl TestClient {
         for (key, value) in &headers {
             builder = builder.header(key.as_str(), value.as_str());
         }
-        
+
         let hyper_body = match body {
             Some(b) => Body::from(b),
             None => Body::empty(),
         };
-        
+
         let hyper_req = builder.body(hyper_body).expect("Failed to build request");
         let req = match Request::from_hyper(hyper_req).await {
             Ok(r) => r,
@@ -123,7 +138,7 @@ impl TestClient {
                 };
             }
         };
-        
+
         match self.router.handle_request(req).await {
             Ok(response) => TestResponse::from_response(response).await,
             Err(e) => TestResponse {
@@ -151,13 +166,17 @@ impl TestResponse {
             .iter()
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect();
-        
+
         let body_bytes = hyper::body::to_bytes(response.body)
             .await
             .unwrap_or_default();
         let body = String::from_utf8_lossy(&body_bytes).to_string();
-        
-        Self { status, headers, body }
+
+        Self {
+            status,
+            headers,
+            body,
+        }
     }
 
     /// Check if status is successful (2xx)
@@ -172,13 +191,22 @@ impl TestResponse {
 
     /// Assert status code
     pub fn assert_status(&self, expected: u16) -> &Self {
-        assert_eq!(self.status, expected, "Expected status {}, got {}", expected, self.status);
+        assert_eq!(
+            self.status, expected,
+            "Expected status {}, got {}",
+            expected, self.status
+        );
         self
     }
 
     /// Assert body contains text
     pub fn assert_body_contains(&self, text: &str) -> &Self {
-        assert!(self.body.contains(text), "Body does not contain '{}': {}", text, self.body);
+        assert!(
+            self.body.contains(text),
+            "Body does not contain '{}': {}",
+            text,
+            self.body
+        );
         self
     }
 }

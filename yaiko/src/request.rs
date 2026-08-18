@@ -1,4 +1,4 @@
-use hyper::{Body, Request as HyperRequest, Method, Uri};
+use hyper::{Body, Method, Request as HyperRequest, Uri};
 use serde_json::Value;
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -23,7 +23,9 @@ pub struct Request {
 }
 
 impl Request {
-    pub async fn from_hyper(req: HyperRequest<Body>) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn from_hyper(
+        req: HyperRequest<Body>,
+    ) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         Self::from_hyper_with_addr(req, None).await
     }
 
@@ -33,7 +35,7 @@ impl Request {
     ) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let (parts, body) = req.into_parts();
         let query = Self::parse_query(&parts.uri);
-        
+
         Ok(Request {
             method: parts.method,
             uri: parts.uri,
@@ -54,20 +56,21 @@ impl Request {
 
     pub async fn json(&mut self) -> Result<Value, Box<dyn std::error::Error + Send + Sync>> {
         if self.json_body.is_none() {
-            let body_bytes = hyper::body::to_bytes({
-                let body = std::mem::replace(&mut self.body, hyper::Body::empty());
-                body
-            }).await?;
+            let body_bytes =
+                hyper::body::to_bytes(std::mem::replace(&mut self.body, hyper::Body::empty()))
+                    .await?;
             if !body_bytes.is_empty() {
                 self.json_body = Some(serde_json::from_slice(&body_bytes)?);
             }
-            // Repopulate the consumed body bytes cleanly for downstream execution! 
+            // Repopulate the consumed body bytes cleanly for downstream execution!
             self.body = hyper::Body::from(body_bytes);
         }
         Ok(self.json_body.clone().unwrap_or(Value::Null))
     }
 
-    pub async fn form_data(&mut self) -> Result<HashMap<String, String>, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn form_data(
+        &mut self,
+    ) -> Result<HashMap<String, String>, Box<dyn std::error::Error + Send + Sync>> {
         if self.form_data_cache.is_none() {
             let body = std::mem::replace(&mut self.body, hyper::Body::empty());
             let body_bytes = hyper::body::to_bytes(body).await?;
@@ -121,7 +124,9 @@ impl Request {
     }
 
     /// Get the raw body bytes without consuming the body stream
-    pub async fn body_bytes(&mut self) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn body_bytes(
+        &mut self,
+    ) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
         let body = std::mem::replace(&mut self.body, hyper::Body::empty());
         let body_bytes = hyper::body::to_bytes(body).await?;
         // Repopulate so downstream can still read it
@@ -135,8 +140,12 @@ impl Request {
             for pair in query_str.split('&') {
                 if let Some((key, value)) = pair.split_once('=') {
                     query.insert(
-                        percent_encoding::percent_decode_str(key).decode_utf8_lossy().to_string(),
-                        percent_encoding::percent_decode_str(value).decode_utf8_lossy().to_string(),
+                        percent_encoding::percent_decode_str(key)
+                            .decode_utf8_lossy()
+                            .to_string(),
+                        percent_encoding::percent_decode_str(value)
+                            .decode_utf8_lossy()
+                            .to_string(),
                     );
                 }
             }

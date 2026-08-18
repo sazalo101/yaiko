@@ -9,6 +9,12 @@ pub struct TemplateEngine {
     pub dev_mode_dir: Option<String>,
 }
 
+impl Default for TemplateEngine {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TemplateEngine {
     pub fn new() -> Self {
         TemplateEngine {
@@ -46,12 +52,21 @@ impl TemplateEngine {
         Ok(())
     }
 
-    pub fn register_template_file(&mut self, name: &str, path: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub fn register_template_file(
+        &mut self,
+        name: &str,
+        path: &str,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.handlebars.register_template_file(name, path)?;
         Ok(())
     }
 
-    pub fn render<T: Serialize>(&mut self, req: &Request, template: &str, data: &T) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
+    pub fn render<T: Serialize>(
+        &mut self,
+        req: &Request,
+        template: &str,
+        data: &T,
+    ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
         let reload_dir = self.dev_mode_dir.clone();
         if let Some(dir) = reload_dir {
             self.handlebars.clear_templates();
@@ -59,7 +74,7 @@ impl TemplateEngine {
         }
 
         let mut json_data = serde_json::to_value(data)?;
-        
+
         // Auto-inject CSRF token from cookie if present
         if let Some(obj) = json_data.as_object_mut() {
             if let Some(cookie_str) = req.headers.get("cookie").and_then(|h| h.to_str().ok()) {
@@ -71,7 +86,10 @@ impl TemplateEngine {
                         None
                     }
                 }) {
-                    obj.insert("csrf_token".to_string(), serde_json::Value::String(token.to_string()));
+                    obj.insert(
+                        "csrf_token".to_string(),
+                        serde_json::Value::String(token.to_string()),
+                    );
                 }
             }
         }

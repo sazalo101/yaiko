@@ -1,29 +1,29 @@
 pub mod app;
-pub mod router;
-pub mod handler;
-pub mod middleware;
-pub mod request;
-pub mod response;
-pub mod server;
-pub mod static_files;
-pub mod template;
 pub mod auth;
 pub mod cache;
 pub mod compression;
 pub mod database;
 pub mod file_upload;
+pub mod handler;
 #[cfg(feature = "metrics")]
 pub mod metrics;
+pub mod middleware;
+pub mod request;
+pub mod response;
+pub mod router;
+pub mod server;
 pub mod session;
+pub mod static_files;
+pub mod template;
 
 // Production modules
 pub mod config;
 pub mod error;
-pub mod seo;
-pub mod security;
-pub mod websocket;
-pub mod jobs;
 pub mod health;
+pub mod jobs;
+pub mod security;
+pub mod seo;
+pub mod websocket;
 
 // Validation module
 pub mod validation;
@@ -37,51 +37,53 @@ pub mod testing;
 pub mod dev;
 
 pub use app::App;
-pub use router::{Router, Route};
+pub use config::Settings;
+pub use database::Database;
+pub use error::{AppError, AppResult};
 pub use handler::Handler;
 pub use middleware::Middleware;
 pub use request::Request;
 pub use response::Response;
+pub use router::{Route, Router};
 pub use server::Server;
-pub use config::Settings;
-pub use error::{AppError, AppResult};
+pub use session::{MemorySessionStore, Session, SessionHandle, SessionMiddleware, SessionStore};
 pub use static_files::StaticFiles;
-pub use database::Database;
-pub use session::{Session, SessionHandle, SessionMiddleware, MemorySessionStore, SessionStore};
 
 // Security exports
-pub use security::{SecurityHeaders, RateLimiter, CsrfProtection};
+pub use security::{CsrfProtection, RateLimiter, SecurityHeaders};
 
 // Auth exports
-pub use auth::{JwtAuth, AuthMiddleware, Claims, SessionAuth, login_session, logout_session, require_role};
+pub use auth::{
+    login_session, logout_session, require_role, AuthMiddleware, Claims, JwtAuth, SessionAuth,
+};
 
 // Logging exports
-pub use logging::{LoggingMiddleware, init_tracing};
+pub use logging::{init_tracing, LoggingMiddleware};
 
 // Testing exports
 pub use testing::{TestClient, TestResponse};
 
 // File upload exports
-pub use file_upload::{FileUpload, parse_multipart};
+pub use file_upload::{parse_multipart, FileUpload};
 
 // Compression exports
 pub use compression::CompressionMiddleware;
 
 // WebSocket exports
-pub use websocket::{WebSocketManager, WebSocketConnection, is_websocket_upgrade};
+pub use websocket::{is_websocket_upgrade, WebSocketConnection, WebSocketManager};
 
 // Background jobs exports
-pub use jobs::{JobQueue, Job};
+pub use jobs::{Job, JobQueue};
 
 // Health check exports
-pub use health::{HealthCheck, DetailedHealthCheck};
+pub use health::{DetailedHealthCheck, HealthCheck};
 
 // Re-export commonly used types
+pub use async_trait::async_trait;
+pub use hyper;
 pub use hyper::{Body, Method, StatusCode};
 pub use serde::{Deserialize, Serialize};
 pub use serde_json::{json, Value};
-pub use async_trait::async_trait;
-pub use hyper;
 pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
 pub use tracing;
 

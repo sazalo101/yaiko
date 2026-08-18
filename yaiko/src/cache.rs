@@ -12,17 +12,25 @@ impl Cache {
         Ok(Cache { client })
     }
 
-    pub async fn get<T: for<'de> serde::Deserialize<'de>>(&self, key: &str) -> Result<Option<T>, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn get<T: for<'de> serde::Deserialize<'de>>(
+        &self,
+        key: &str,
+    ) -> Result<Option<T>, Box<dyn std::error::Error + Send + Sync>> {
         let mut conn = self.client.get_async_connection().await?;
         let value: Option<String> = conn.get(key).await?;
-        
+
         match value {
             Some(v) => Ok(Some(serde_json::from_str(&v)?)),
             None => Ok(None),
         }
     }
 
-    pub async fn set<T: serde::Serialize>(&self, key: &str, value: &T, ttl: Duration) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn set<T: serde::Serialize>(
+        &self,
+        key: &str,
+        value: &T,
+        ttl: Duration,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let mut conn = self.client.get_async_connection().await?;
         let serialized = serde_json::to_string(value)?;
         let _: () = conn.set_ex(key, serialized, ttl.as_secs() as usize).await?;

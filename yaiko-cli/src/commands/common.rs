@@ -35,10 +35,18 @@ pub fn cargo_manifest(project_dir: &Path) -> PathBuf {
 }
 
 pub fn load_project_name(project_dir: &Path) -> anyhow::Result<String> {
-    let manifest = std::fs::read_to_string(cargo_manifest(project_dir))
-        .with_context(|| format!("Failed to read '{}'.", cargo_manifest(project_dir).display()))?;
-    let parsed: toml::Value = toml::from_str(&manifest)
-        .with_context(|| format!("Failed to parse '{}'.", cargo_manifest(project_dir).display()))?;
+    let manifest = std::fs::read_to_string(cargo_manifest(project_dir)).with_context(|| {
+        format!(
+            "Failed to read '{}'.",
+            cargo_manifest(project_dir).display()
+        )
+    })?;
+    let parsed: toml::Value = toml::from_str(&manifest).with_context(|| {
+        format!(
+            "Failed to parse '{}'.",
+            cargo_manifest(project_dir).display()
+        )
+    })?;
 
     parsed
         .get("package")
@@ -54,7 +62,10 @@ pub fn resolve_yaiko_core_dependency() -> anyhow::Result<String> {
             .canonicalize()
             .with_context(|| format!("YAIKO_CORE_PATH does not exist: {}", path))?;
         validate_yaiko_core_manifest(&canonical)?;
-        return Ok(format!("yaiko-core = {{ path = \"{}\" }}", normalize_path(&canonical)));
+        return Ok(format!(
+            "yaiko-core = {{ path = \"{}\" }}",
+            normalize_path(&canonical)
+        ));
     }
 
     let cli_manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -68,7 +79,10 @@ pub fn resolve_yaiko_core_dependency() -> anyhow::Result<String> {
             .canonicalize()
             .with_context(|| format!("Failed to canonicalize '{}'.", framework_dir.display()))?;
         validate_yaiko_core_manifest(&canonical)?;
-        return Ok(format!("yaiko-core = {{ path = \"{}\" }}", normalize_path(&canonical)));
+        return Ok(format!(
+            "yaiko-core = {{ path = \"{}\" }}",
+            normalize_path(&canonical)
+        ));
     }
 
     bail!(

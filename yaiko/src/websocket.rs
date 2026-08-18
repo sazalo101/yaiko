@@ -41,7 +41,12 @@ impl WebSocketManager {
     }
 
     /// Register a new connection
-    pub async fn register(&self, id: String, user_id: Option<String>, sender: Option<tokio::sync::mpsc::Sender<String>>) {
+    pub async fn register(
+        &self,
+        id: String,
+        user_id: Option<String>,
+        sender: Option<tokio::sync::mpsc::Sender<String>>,
+    ) {
         let conn = WebSocketConnection {
             id: id.clone(),
             user_id,
@@ -173,7 +178,8 @@ impl WebSocketManager {
     /// Start a background keepalive loop that pings connections and removes dead ones
     pub fn start_keepalive(self: Arc<Self>, interval_secs: u64) -> tokio::task::JoinHandle<()> {
         tokio::spawn(async move {
-            let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(interval_secs));
+            let mut interval =
+                tokio::time::interval(tokio::time::Duration::from_secs(interval_secs));
             loop {
                 interval.tick().await;
 
@@ -230,32 +236,34 @@ impl Default for WebSocketManager {
 
 /// Check if a request is a WebSocket upgrade request
 pub fn is_websocket_upgrade(req: &Request) -> bool {
-    let upgrade = req.headers
+    let upgrade = req
+        .headers
         .get("upgrade")
         .and_then(|v| v.to_str().ok())
         .map(|s| s.to_lowercase())
         .unwrap_or_default();
-    
-    let connection = req.headers
+
+    let connection = req
+        .headers
         .get("connection")
         .and_then(|v| v.to_str().ok())
         .map(|s| s.to_lowercase())
         .unwrap_or_default();
-    
+
     upgrade == "websocket" && connection.contains("upgrade")
 }
 
 /// Create a WebSocket upgrade response
-/// 
+///
 /// Note: This creates the HTTP upgrade response headers.
 pub fn websocket_upgrade_response(key: &str) -> Response {
-    use base64::{Engine as _, engine::general_purpose::STANDARD};
-    
+    use base64::{engine::general_purpose::STANDARD, Engine as _};
+
     // Calculate Sec-WebSocket-Accept
     let mut hasher = sha1_smol::Sha1::new();
     hasher.update(format!("{}258EAFA5-E914-47DA-95CA-C5AB0DC85B11", key).as_bytes());
     let accept = STANDARD.encode(hasher.digest().bytes());
-    
+
     Response {
         status: StatusCode::SWITCHING_PROTOCOLS,
         headers: {
@@ -293,12 +301,16 @@ pub async fn handle_websocket_upgrade(
     req: &Request,
     manager: Arc<WebSocketManager>,
     user_id: Option<String>,
-) -> Result<(Response, String, tokio::sync::mpsc::Receiver<String>), Box<dyn std::error::Error + Send + Sync>> {
+) -> Result<
+    (Response, String, tokio::sync::mpsc::Receiver<String>),
+    Box<dyn std::error::Error + Send + Sync>,
+> {
     if !is_websocket_upgrade(req) {
         return Err("Not a WebSocket upgrade request".into());
     }
 
-    let key = req.headers
+    let key = req
+        .headers
         .get("sec-websocket-key")
         .and_then(|v| v.to_str().ok())
         .ok_or("Missing Sec-WebSocket-Key header")?;

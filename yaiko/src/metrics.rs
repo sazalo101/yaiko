@@ -1,8 +1,8 @@
-use prometheus::{Counter, Histogram, Registry, Encoder, TextEncoder};
+use crate::{Handler, Middleware, Request, Response};
+use async_trait::async_trait;
+use prometheus::{Counter, Encoder, Histogram, HistogramOpts, Registry, TextEncoder};
 use std::sync::Arc;
 use std::time::Instant;
-use crate::{Handler, Request, Response, Middleware};
-use async_trait::async_trait;
 
 #[derive(Clone)]
 pub struct Metrics {
@@ -12,21 +12,34 @@ pub struct Metrics {
     registry: Arc<Registry>,
 }
 
+impl Default for Metrics {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Metrics {
     pub fn new() -> Self {
         let registry = Arc::new(Registry::new());
-        
+
         let request_counter = Counter::new("http_requests_total", "Total HTTP requests")
             .expect("Failed to create request counter");
-        
-        let request_duration = Histogram::new("http_request_duration_seconds", "HTTP request duration")
-            .expect("Failed to create request duration histogram");
-        
+
+        let request_duration = Histogram::with_opts(HistogramOpts::new(
+            "http_request_duration_seconds",
+            "HTTP request duration",
+        ))
+        .expect("Failed to create request duration histogram");
+
         let error_counter = Counter::new("http_errors_total", "Total HTTP errors")
             .expect("Failed to create error counter");
 
-        registry.register(Box::new(request_counter.clone())).unwrap();
-        registry.register(Box::new(request_duration.clone())).unwrap();
+        registry
+            .register(Box::new(request_counter.clone()))
+            .unwrap();
+        registry
+            .register(Box::new(request_duration.clone()))
+            .unwrap();
         registry.register(Box::new(error_counter.clone())).unwrap();
 
         Metrics {
@@ -65,16 +78,32 @@ impl Middleware for MetricsMiddleware {
     ) -> Result<Response, Box<dyn std::error::Error + Send + Sync>> {
         let start = Instant::now();
         self.metrics.request_counter.inc();
-        
+
         let result = next.handle(req).await;
-        
+
         let duration = start.elapsed();
-        self.metrics.request_duration.observe(duration.as_secs_f64());
-        
-        if let Err(_) = &result {
+        self.metrics
+            .request_duration
+            .observe(duration.as_secs_f64());
+
+        if result.is_err() {
             self.metrics.error_counter.inc();
         }
-        
+
         result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Metrics;
+
+    #[test]
+    fn metrics_can_be_created_and_exported() {
+        let metrics = Metrics::new();
+        let exported = metrics.export().expect("metrics export should succeed");
+        assert!(exported.contains("http_requests_total"));
+        assert!(exported.contains("http_request_duration_seconds"));
+        assert!(exported.contains("http_errors_total"));
     }
 }

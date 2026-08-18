@@ -96,6 +96,12 @@ pub struct Validator {
     rules: HashMap<String, Vec<Box<dyn Rule>>>,
 }
 
+impl Default for Validator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Validator {
     pub fn new() -> Self {
         Self {
@@ -107,7 +113,7 @@ impl Validator {
     pub fn add_rule<R: Rule + 'static>(mut self, field: &str, rule: R) -> Self {
         self.rules
             .entry(field.to_string())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(Box::new(rule));
         self
     }

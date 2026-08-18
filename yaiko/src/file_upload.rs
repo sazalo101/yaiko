@@ -1,6 +1,6 @@
 use multer::Multipart;
-use std::path::PathBuf;
 use std::collections::HashMap;
+use std::path::PathBuf;
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
 
@@ -12,17 +12,20 @@ pub struct FileUpload {
 }
 
 impl FileUpload {
-    pub async fn save_to(&self, directory: &str) -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn save_to(
+        &self,
+        directory: &str,
+    ) -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
         let path = PathBuf::from(directory).join(&self.filename);
-        
+
         // Create directory if it doesn't exist
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).await?;
         }
-        
+
         let mut file = fs::File::create(&path).await?;
         file.write_all(&self.data).await?;
-        
+
         Ok(path)
     }
 }
@@ -48,9 +51,10 @@ pub async fn parse_multipart(
     while let Some(mut field) = multipart.next_field().await? {
         let field_name = field.name().map(|n| n.to_string());
         let filename = field.file_name().map(|f| f.to_string());
-        
+
         if let Some(filename) = filename {
-            let content_type = field.content_type()
+            let content_type = field
+                .content_type()
                 .map(|ct| ct.to_string())
                 .unwrap_or_else(|| "application/octet-stream".to_string());
 

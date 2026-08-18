@@ -1,23 +1,24 @@
+use chrono::Utc;
+use colored::Colorize;
+use sqlx::postgres::PgPoolOptions;
+use sqlx::sqlite::SqlitePoolOptions;
 use std::fs;
 use std::path::Path;
-use colored::Colorize;
-use chrono::Utc;
-use sqlx::sqlite::SqlitePoolOptions;
-use sqlx::postgres::PgPoolOptions;
 
 pub async fn create(name: &str) -> anyhow::Result<()> {
     println!("[*] Creating migration: {}", name.green());
-    
+
     let migrations_dir = Path::new("migrations");
     if !migrations_dir.exists() {
         fs::create_dir_all(migrations_dir)?;
     }
-    
+
     let timestamp = Utc::now().format("%Y%m%d%H%M%S");
     let filename = format!("{}_{}.sql", timestamp, name);
     let filepath = migrations_dir.join(&filename);
-    
-    let content = format!(r#"-- Migration: {name}
+
+    let content = format!(
+        r#"-- Migration: {name}
 -- Created: {timestamp}
 
 -- Write your UP migration here
@@ -32,22 +33,23 @@ pub async fn create(name: &str) -> anyhow::Result<()> {
 
 -- DOWN migration (for rollback)
 -- To run rollback, create a separate file: {timestamp}_{name}_down.sql
-"#);
-    
+"#
+    );
+
     fs::write(&filepath, content)?;
-    
+
     println!("[OK] Created: migrations/{}", filename);
     println!("  Edit the file and run 'yaiko migrate run' to apply.\n");
-    
+
     Ok(())
 }
 
 pub async fn run() -> anyhow::Result<()> {
     // Load .env file automatically
     dotenvy::dotenv().ok();
-    
+
     println!("[*] Running pending migrations...");
-    
+
     // Check for DATABASE_URL
     let db_url = match std::env::var("DATABASE_URL") {
         Ok(url) => url,
@@ -56,22 +58,22 @@ pub async fn run() -> anyhow::Result<()> {
             return Ok(());
         }
     };
-    
+
     let migrations_dir = Path::new("migrations");
     if !migrations_dir.exists() {
         println!("{} No migrations directory found.", "!".yellow());
         return Ok(());
     }
-    
+
     // List migration files
     let mut migrations: Vec<_> = fs::read_dir(migrations_dir)?
         .filter_map(|e| e.ok())
         .filter(|e| e.path().extension().map_or(false, |ext| ext == "sql"))
         .filter(|e| !e.file_name().to_string_lossy().contains("_down"))
         .collect();
-    
+
     migrations.sort_by_key(|e| e.file_name());
-    
+
     if migrations.is_empty() {
         println!("[OK] No migrations found in migrations/ directory.");
         return Ok(());
@@ -82,9 +84,11 @@ pub async fn run() -> anyhow::Result<()> {
     } else if db_url.starts_with("postgres:") || db_url.starts_with("postgresql:") {
         run_postgres(&db_url, &migrations).await?;
     } else {
-        println!("[!] Unsupported DATABASE_URL protocol. Supported: sqlite:, postgres:, postgresql:");
+        println!(
+            "[!] Unsupported DATABASE_URL protocol. Supported: sqlite:, postgres:, postgresql:"
+        );
     }
-    
+
     Ok(())
 }
 
@@ -99,17 +103,18 @@ async fn run_sqlite(db_url: &str, migrations: &[fs::DirEntry]) -> anyhow::Result
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             filename TEXT NOT NULL UNIQUE,
             executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )"
+        )",
     )
     .execute(&pool)
     .await?;
 
-    let applied: Vec<String> = sqlx::query_as::<_, (String,)>("SELECT filename FROM _yaiko_migrations ORDER BY filename")
-        .fetch_all(&pool)
-        .await?
-        .into_iter()
-        .map(|r| r.0)
-        .collect();
+    let applied: Vec<String> =
+        sqlx::query_as::<_, (String,)>("SELECT filename FROM _yaiko_migrations ORDER BY filename")
+            .fetch_all(&pool)
+            .await?
+            .into_iter()
+            .map(|r| r.0)
+            .collect();
 
     let mut ran = 0;
     for migration in migrations {
@@ -158,17 +163,18 @@ async fn run_postgres(db_url: &str, migrations: &[fs::DirEntry]) -> anyhow::Resu
             id SERIAL PRIMARY KEY,
             filename VARCHAR(255) NOT NULL UNIQUE,
             executed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        )"
+        )",
     )
     .execute(&pool)
     .await?;
 
-    let applied: Vec<String> = sqlx::query_as::<_, (String,)>("SELECT filename FROM _yaiko_migrations ORDER BY filename")
-        .fetch_all(&pool)
-        .await?
-        .into_iter()
-        .map(|r| r.0)
-        .collect();
+    let applied: Vec<String> =
+        sqlx::query_as::<_, (String,)>("SELECT filename FROM _yaiko_migrations ORDER BY filename")
+            .fetch_all(&pool)
+            .await?
+            .into_iter()
+            .map(|r| r.0)
+            .collect();
 
     let mut ran = 0;
     for migration in migrations {
@@ -208,39 +214,42 @@ async fn run_postgres(db_url: &str, migrations: &[fs::DirEntry]) -> anyhow::Resu
 
 pub async fn rollback() -> anyhow::Result<()> {
     println!("[*] Rolling back last migration...");
-    println!("{} Rollback requires sqlx CLI: sqlx migrate revert\n", "!".yellow());
+    println!(
+        "{} Rollback requires sqlx CLI: sqlx migrate revert\n",
+        "!".yellow()
+    );
     Ok(())
 }
 
 pub async fn status() -> anyhow::Result<()> {
     dotenvy::dotenv().ok();
     println!("[*] Migration status:");
-    
+
     let migrations_dir = Path::new("migrations");
     if !migrations_dir.exists() {
         println!("  No migrations directory found.\n");
         return Ok(());
     }
-    
+
     let mut migrations: Vec<_> = fs::read_dir(migrations_dir)?
         .filter_map(|e| e.ok())
         .filter(|e| e.path().extension().map_or(false, |ext| ext == "sql"))
         .filter(|e| !e.file_name().to_string_lossy().contains("_down"))
         .collect();
-    
+
     migrations.sort_by_key(|e| e.file_name());
-    
+
     if migrations.is_empty() {
         println!("  No migrations found.\n");
         return Ok(());
     }
-    
+
     println!();
     for migration in &migrations {
         let filename = migration.file_name();
         println!("  {} {}", "○".cyan(), filename.to_string_lossy());
     }
     println!();
-    
+
     Ok(())
 }
