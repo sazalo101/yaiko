@@ -86,6 +86,7 @@ pub mod task_scheduler;
 pub mod template;
 pub mod tenant;
 pub mod upload_policy;
+pub mod url;
 
 // Production modules
 pub mod config;
@@ -276,6 +277,7 @@ pub use subtitle_style::{SubtitlePosition, SubtitleStyle, SubtitleStyleError};
 pub use upload_policy::{
     checksum, sanitize_filename, TempUploadGuard, UploadError, UploadMetadata, UploadPolicy,
 };
+pub use url::{Url, UrlError};
 
 // Security exports
 pub use security::{CsrfProtection, RateLimiter, SecurityHeaders};
