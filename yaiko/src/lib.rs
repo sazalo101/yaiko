@@ -32,6 +32,7 @@ pub mod validation;
 
 // Developer experience modules
 pub mod logging;
+pub mod oauth;
 pub mod openapi;
 pub mod testing;
 
@@ -47,6 +48,9 @@ pub use error::{AppError, AppResult, ErrorCode, ErrorDetails, ErrorDocument};
 pub use extract::{Form, FromRequest, Json, Path, Query};
 pub use handler::Handler;
 pub use middleware::Middleware;
+pub use oauth::{
+    OAuthCallback, OAuthProvider, OAuthState, OAuthTokenResponse, OidcUserInfo, PkceChallenge,
+};
 pub use openapi::{OpenApiDocument, OpenApiHandler, OpenApiOperation, OpenApiResponse};
 pub use request::Request;
 pub use response::Response;
