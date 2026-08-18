@@ -39,7 +39,7 @@ pub mod testing;
 pub mod dev;
 
 pub use app::App;
-pub use cache::{Cache, CacheResult, CacheStore, MemoryCache};
+pub use cache::{Cache, CacheNamespace, CacheResult, CacheStore, MemoryCache};
 pub use config::Settings;
 pub use database::Database;
 pub use error::{AppError, AppResult, ErrorCode, ErrorDetails, ErrorDocument};

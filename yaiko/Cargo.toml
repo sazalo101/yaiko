@@ -65,6 +65,8 @@ multer = "2.0"
 
 # WebSocket support
 sha1_smol = "1.0"
+sha2 = "0.10"
+hmac = "0.12"
 base64 = "0.21"
 notify = "6.0"
 walkdir = "2.5.0"

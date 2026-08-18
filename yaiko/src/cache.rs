@@ -3,6 +3,7 @@
 use async_trait::async_trait;
 use redis::{AsyncCommands, Client};
 use std::collections::HashMap;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 
@@ -14,6 +15,41 @@ pub trait CacheStore: Send + Sync {
     async fn get_bytes(&self, key: &str) -> CacheResult<Option<Vec<u8>>>;
     async fn set_bytes(&self, key: &str, value: &[u8], ttl: Duration) -> CacheResult<()>;
     async fn delete(&self, key: &str) -> CacheResult<()>;
+}
+
+/// A cache view that prefixes every key with an application namespace.
+#[derive(Clone)]
+pub struct CacheNamespace<B> {
+    backend: Arc<B>,
+    namespace: String,
+}
+
+impl<B> CacheNamespace<B>
+where
+    B: CacheStore + 'static,
+{
+    pub fn new(backend: Arc<B>, namespace: impl Into<String>) -> Self {
+        Self {
+            backend,
+            namespace: namespace.into(),
+        }
+    }
+
+    pub fn key(&self, key: &str) -> String {
+        format!("{}:{}", self.namespace, key)
+    }
+
+    pub async fn get_bytes(&self, key: &str) -> CacheResult<Option<Vec<u8>>> {
+        self.backend.get_bytes(&self.key(key)).await
+    }
+
+    pub async fn set_bytes(&self, key: &str, value: &[u8], ttl: Duration) -> CacheResult<()> {
+        self.backend.set_bytes(&self.key(key), value, ttl).await
+    }
+
+    pub async fn delete(&self, key: &str) -> CacheResult<()> {
+        self.backend.delete(&self.key(key)).await
+    }
 }
 
 #[derive(Clone)]
@@ -31,6 +67,14 @@ pub struct MemoryCache {
 impl MemoryCache {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub async fn invalidate_namespace(&self, namespace: &str) {
+        let prefix = format!("{}:", namespace);
+        self.entries
+            .write()
+            .await
+            .retain(|key, _| !key.starts_with(&prefix));
     }
 
     async fn purge_expired(&self) {
