@@ -40,6 +40,7 @@ pub mod validation;
 pub mod logging;
 pub mod oauth;
 pub mod openapi;
+pub mod privacy;
 pub mod testing;
 
 // Optional dev module for development utilities
@@ -60,6 +61,7 @@ pub use oauth::{
     OAuthCallback, OAuthProvider, OAuthState, OAuthTokenResponse, OidcUserInfo, PkceChallenge,
 };
 pub use openapi::{OpenApiDocument, OpenApiHandler, OpenApiOperation, OpenApiResponse};
+pub use privacy::{PrivacyPolicy, SecretString};
 pub use rate_limit::{MemoryRateLimiter, QuotaPolicy, RateLimitDecision};
 pub use request::Request;
 pub use response::Response;
