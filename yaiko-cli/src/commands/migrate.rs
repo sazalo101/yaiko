@@ -68,7 +68,7 @@ pub async fn run() -> anyhow::Result<()> {
     // List migration files
     let mut migrations: Vec<_> = fs::read_dir(migrations_dir)?
         .filter_map(|e| e.ok())
-        .filter(|e| e.path().extension().map_or(false, |ext| ext == "sql"))
+        .filter(|e| e.path().extension().is_some_and(|ext| ext == "sql"))
         .filter(|e| !e.file_name().to_string_lossy().contains("_down"))
         .collect();
 
@@ -233,7 +233,7 @@ pub async fn status() -> anyhow::Result<()> {
 
     let mut migrations: Vec<_> = fs::read_dir(migrations_dir)?
         .filter_map(|e| e.ok())
-        .filter(|e| e.path().extension().map_or(false, |ext| ext == "sql"))
+        .filter(|e| e.path().extension().is_some_and(|ext| ext == "sql"))
         .filter(|e| !e.file_name().to_string_lossy().contains("_down"))
         .collect();
 

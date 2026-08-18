@@ -14,11 +14,14 @@ use sqlx::Sqlite;
 ///
 /// # Example (SQLite)
 /// ```rust,no_run
+/// # #[cfg(feature = "sqlite")]
+/// # {
 /// # use yaiko_core::Database;
 /// # async fn demo() -> Result<(), sqlx::Error> {
 /// let db = Database::sqlite("sqlite:./app.db").await?;
 /// # let _ = db;
 /// # Ok(())
+/// # }
 /// # }
 /// ```
 ///
