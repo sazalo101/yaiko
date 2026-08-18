@@ -103,6 +103,7 @@ pub mod jobs;
 pub mod media_waveform;
 pub mod media_webhook;
 pub mod schema_validation;
+pub mod script;
 pub mod search;
 pub mod security;
 pub mod seo;
@@ -256,6 +257,7 @@ pub use resumable_upload::{CompletedUpload, ResumableUploadStore, UploadSessionE
 pub use robots::{RobotsError, RobotsTxt};
 pub use router::{Route, Router};
 pub use schema_validation::{FieldError, SchemaRule, SchemaValidator, ValidationReport};
+pub use script::{ScriptError, ScriptRegistry, ScriptStrategy};
 pub use search::{Filter, FilterOperator, QueryBuilder, QueryError, QuerySpec, SortField};
 pub use server::Server;
 pub use session::{MemorySessionStore, Session, SessionHandle, SessionMiddleware, SessionStore};
