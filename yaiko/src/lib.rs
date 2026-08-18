@@ -1,6 +1,7 @@
 pub mod api_keys;
 pub mod app;
 pub mod audit;
+pub mod audit_sinks;
 pub mod auth;
 pub mod body_stream;
 pub mod cache;
@@ -84,6 +85,9 @@ pub use api_keys::{
 };
 pub use app::App;
 pub use audit::{AuditEvent, AuditEventBuilder, AuditQuery, MemoryAuditSink};
+pub use audit_sinks::{
+    AuditFilter, AuditSink, AuditSinkError, BufferedAuditSink, FilteredAuditSink, JsonlAuditSink,
+};
 pub use cache::{Cache, CacheNamespace, CacheResult, CacheStore, MemoryCache};
 pub use coalescing::{stale_window, CachedValue, CoalesceError, FlightOwner, RequestCoalescer};
 pub use compression_policy::{CompressionDecision, CompressionEncoding, CompressionPolicy};
