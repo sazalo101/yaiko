@@ -43,6 +43,7 @@ pub mod session;
 pub mod singleflight_cache;
 pub mod static_files;
 pub mod storage;
+pub mod subtitle_style;
 pub mod task_observability;
 pub mod task_results;
 pub mod task_scheduler;
@@ -157,6 +158,7 @@ pub use session::{MemorySessionStore, Session, SessionHandle, SessionMiddleware,
 pub use singleflight_cache::{CacheError, CacheLookup, SingleFlightCache};
 pub use static_files::StaticFiles;
 pub use storage::{LocalStorage, Storage, StorageResult};
+pub use subtitle_style::{SubtitlePosition, SubtitleStyle, SubtitleStyleError};
 pub use upload_policy::{
     checksum, sanitize_filename, TempUploadGuard, UploadError, UploadMetadata, UploadPolicy,
 };
