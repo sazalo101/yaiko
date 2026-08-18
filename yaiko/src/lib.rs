@@ -23,6 +23,7 @@ pub mod file_upload;
 pub mod handler;
 pub mod media_access;
 pub mod media_cache_key;
+pub mod media_color;
 pub mod media_content_type;
 pub mod media_delivery;
 pub mod media_delivery_policy;
@@ -144,6 +145,10 @@ pub use fixtures::{CleanupGuard, FixtureFactory};
 pub use handler::Handler;
 pub use media_access::{MediaAccessClaims, MediaAccessError, MediaAccessTokens};
 pub use media_cache_key::{CacheKeyError, ThumbnailCacheKey};
+pub use media_color::{
+    ColorPolicyError, ColorRange, ColorSpace, MediaColorMetadata, MediaColorPolicy, PixelFormat,
+    Transfer,
+};
 pub use media_content_type::{sniff_media, ContentTypeError, MediaContentType, MediaKind};
 pub use media_delivery::{ByteRange, MediaAsset, MediaDelivery, MediaResponse, RangeError};
 pub use media_delivery_policy::{DeliveryHeaders, DeliveryPolicyError, MediaDeliveryPolicy};
