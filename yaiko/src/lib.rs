@@ -12,6 +12,7 @@ pub mod csp;
 pub mod data_transfer;
 pub mod database;
 pub mod delivery;
+pub mod encryption;
 pub mod file_upload;
 pub mod handler;
 pub mod media_delivery;
@@ -86,6 +87,7 @@ pub use data_transfer::{
 };
 pub use database::Database;
 pub use delivery::{unix_seconds, DeliveryError, DeliveryRecord, DeliveryScheduler, DeliveryState};
+pub use encryption::{EncryptedEnvelope, EncryptionError, KeyRing};
 pub use error::{AppError, AppResult, ErrorCode, ErrorDetails, ErrorDocument};
 pub use extract::{Form, FromRequest, Json, Path, Query};
 pub use feature_flags::{FeatureChange, FeatureFlagStore, FeatureSnapshot, FeatureValue};
