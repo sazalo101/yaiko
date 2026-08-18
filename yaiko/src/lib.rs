@@ -1,3 +1,4 @@
+pub mod api_facade;
 pub mod api_keys;
 pub mod app;
 pub mod audio_processing;
@@ -143,6 +144,7 @@ pub mod tracing_context;
 #[cfg(feature = "dev")]
 pub mod dev;
 
+pub use api_facade::{ApiError, ApiFacade, ApiMethod, ApiResponse, ApiRoute};
 pub use api_keys::{
     sign_request, verify_request_signature, ApiKeyError, ApiKeyStore, IssuedApiKey,
 };
