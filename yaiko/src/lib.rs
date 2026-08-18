@@ -18,6 +18,7 @@ pub mod encryption;
 pub mod file_upload;
 pub mod handler;
 pub mod media_delivery;
+pub mod media_processing;
 #[cfg(feature = "metrics")]
 pub mod metrics;
 pub mod metrics_registry;
@@ -103,6 +104,7 @@ pub use feature_flags::{FeatureChange, FeatureFlagStore, FeatureSnapshot, Featur
 pub use fixtures::{CleanupGuard, FixtureFactory};
 pub use handler::Handler;
 pub use media_delivery::{ByteRange, MediaAsset, MediaDelivery, MediaResponse, RangeError};
+pub use media_processing::{CaptionTrack, FfmpegJobSpec, MediaError, MediaPath, MusicTrack};
 pub use metrics_registry::{
     MetricError, MetricKind, MetricValue, MetricsRegistry, MetricsSnapshot,
 };
