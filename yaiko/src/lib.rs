@@ -26,6 +26,7 @@ pub mod media_audio_format;
 pub mod media_cache_key;
 pub mod media_color;
 pub mod media_content_type;
+pub mod media_cursor;
 pub mod media_delivery;
 pub mod media_delivery_policy;
 pub mod media_editor;
@@ -160,6 +161,9 @@ pub use media_color::{
     Transfer,
 };
 pub use media_content_type::{sniff_media, ContentTypeError, MediaContentType, MediaKind};
+pub use media_cursor::{
+    CursorError, CursorPosition, CursorSnapshot, CursorState, MediaCursorStore,
+};
 pub use media_delivery::{ByteRange, MediaAsset, MediaDelivery, MediaResponse, RangeError};
 pub use media_delivery_policy::{DeliveryHeaders, DeliveryPolicyError, MediaDeliveryPolicy};
 pub use media_editor::{EditorError, EditorSnapshot, MediaEditorStore};
