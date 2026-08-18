@@ -5,6 +5,7 @@ pub mod auth;
 pub mod cache;
 pub mod compression;
 pub mod compression_policy;
+pub mod cookie_policy;
 pub mod cors;
 pub mod csp;
 pub mod data_transfer;
@@ -72,6 +73,7 @@ pub use audit::{AuditEvent, AuditEventBuilder, AuditQuery, MemoryAuditSink};
 pub use cache::{Cache, CacheNamespace, CacheResult, CacheStore, MemoryCache};
 pub use compression_policy::{CompressionDecision, CompressionEncoding, CompressionPolicy};
 pub use config::Settings;
+pub use cookie_policy::{CookieError, CookiePolicy, SignedCookieCodec};
 pub use cors::{CorsDecision, CorsDenial, CorsPolicy, OriginRule};
 pub use csp::{ContentSecurityPolicy, CspNonce, SecurityPolicyHeaders};
 pub use data_transfer::{
