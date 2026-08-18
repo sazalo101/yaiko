@@ -93,6 +93,7 @@ pub mod feature_flags;
 pub mod feed;
 pub mod fixtures;
 pub mod form;
+pub mod head;
 pub mod health;
 pub mod health_registry;
 pub mod http_client;
@@ -314,6 +315,7 @@ pub use idempotency::{
 pub use jobs::{DeadLetter, Job, JobQueue};
 
 // Health check exports
+pub use head::{Head, HeadError};
 pub use health::{DetailedHealthCheck, HealthCheck, LivenessCheck, ReadinessCheck};
 pub use health_registry::{
     DependencyHealthHandler, DependencyHealthRegistry, HealthReport, ProbeResult,
