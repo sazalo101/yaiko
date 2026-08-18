@@ -63,6 +63,7 @@ pub mod metrics;
 pub mod metrics_registry;
 pub mod middleware;
 pub mod migrations;
+pub mod network_endpoint;
 pub mod notifications;
 pub mod rate_limit;
 pub mod rbac;
@@ -250,6 +251,7 @@ pub use metrics_registry::{
 };
 pub use middleware::Middleware;
 pub use migrations::{AppliedMigration, Migration, MigrationError, MigrationPlan, MigrationRunner};
+pub use network_endpoint::{NetworkEndpoint, NetworkError, TlsMode};
 pub use notifications::{DeliveryResult, NotificationEnvelope, NotificationTemplate, RetryPolicy};
 pub use oauth::{
     OAuthCallback, OAuthProvider, OAuthState, OAuthTokenResponse, OidcUserInfo, PkceChallenge,
