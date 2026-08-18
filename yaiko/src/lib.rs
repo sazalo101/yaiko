@@ -121,6 +121,7 @@ pub mod script;
 pub mod search;
 pub mod security;
 pub mod seo;
+pub mod watch;
 pub mod waveform_serialization;
 pub mod webhook;
 pub mod websocket;
@@ -341,6 +342,7 @@ pub use compression::CompressionMiddleware;
 pub use media_waveform::{Chapter, ChapterTrack, Waveform, WaveformError};
 pub use media_webhook::{MediaEventKind, MediaWebhookError, MediaWebhookEvent, MediaWebhookSigner};
 pub use versioning::{ApiVersion, VersionDecision, VersionError, VersionNegotiator};
+pub use watch::{WatchError, WatchEvent, WatchRegistration, Watcher};
 pub use waveform_serialization::{
     serialize_waveform, SerializedWaveform, WaveformChapter, WaveformSerializationError,
 };
