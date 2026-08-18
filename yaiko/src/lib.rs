@@ -21,6 +21,7 @@ pub mod distributed_rate_limit;
 pub mod encryption;
 pub mod file_upload;
 pub mod handler;
+pub mod media_access;
 pub mod media_delivery;
 pub mod media_export;
 pub mod media_metadata;
@@ -129,6 +130,7 @@ pub use extract::{Form, FromRequest, Json, Path, Query};
 pub use feature_flags::{FeatureChange, FeatureFlagStore, FeatureSnapshot, FeatureValue};
 pub use fixtures::{CleanupGuard, FixtureFactory};
 pub use handler::Handler;
+pub use media_access::{MediaAccessClaims, MediaAccessError, MediaAccessTokens};
 pub use media_delivery::{ByteRange, MediaAsset, MediaDelivery, MediaResponse, RangeError};
 pub use media_export::{AudioCodec, Container, ExportError, ExportProfile, VideoCodec};
 pub use media_metadata::{
