@@ -58,6 +58,7 @@ pub mod validation;
 pub mod versioning;
 
 // Developer experience modules
+pub mod lifecycle;
 pub mod logging;
 pub mod oauth;
 pub mod openapi;
@@ -129,6 +130,7 @@ pub use auth::{
 };
 
 // Logging exports
+pub use lifecycle::{LifecycleError, ServiceRegistry, ServiceState, ShutdownReport, ShutdownToken};
 pub use logging::{init_tracing, LoggingMiddleware};
 
 // Testing exports
