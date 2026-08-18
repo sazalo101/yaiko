@@ -148,7 +148,12 @@ mod tests {
     fn rejects_tampering_and_unknown_keys() {
         let ring = KeyRing::new("v1", [3; 32]).unwrap();
         let mut envelope = ring.encrypt(b"secret", b"").unwrap();
-        envelope.ciphertext.replace_range(0..1, "A");
+        let replacement = if envelope.ciphertext.starts_with('A') {
+            "B"
+        } else {
+            "A"
+        };
+        envelope.ciphertext.replace_range(0..1, replacement);
         assert_eq!(
             ring.decrypt(&envelope, b""),
             Err(EncryptionError::AuthenticationFailed)
