@@ -27,6 +27,7 @@ pub mod server;
 pub mod session;
 pub mod static_files;
 pub mod storage;
+pub mod task_scheduler;
 pub mod template;
 pub mod tenant;
 pub mod upload_policy;
@@ -126,6 +127,7 @@ pub use auth::{
 pub use logging::{init_tracing, LoggingMiddleware};
 
 // Testing exports
+pub use task_scheduler::{ScheduleError, ScheduledTask, ScheduledTaskState, TaskScheduler};
 pub use tenant::{TenantContext, TenantError, TenantId, TenantQuota, TenantResolver};
 pub use testing::{TestClient, TestResponse};
 pub use tracing_context::{Sampler, Span, SpanEvent, TraceContext};
