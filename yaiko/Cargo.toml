@@ -1,6 +1,6 @@
 [package]
 name = "yaiko-core"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Yaiko Team"]
 description = "A modern, production-ready fullstack web framework for Rust"
